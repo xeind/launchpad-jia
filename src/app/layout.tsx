@@ -17,7 +17,7 @@ import ErrorBoundary from "@/lib/components/ErrorBoundary";
 import { ParallaxProvider } from "react-scroll-parallax";
 import { assetConstants } from "@/lib/utils/constantsV2";
 
-export default function RootLayout({ children }) {
+export default function ({ children }) {
   useEffect(() => {
     window.onfocus = () => {
       let delta = document.querySelectorAll(".datafetch-btn");
