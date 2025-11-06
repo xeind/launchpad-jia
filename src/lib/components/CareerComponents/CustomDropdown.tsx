@@ -14,7 +14,7 @@ export default function CustomDropdown(props) {
             type="button"
             onClick={() => setDropdownOpen((v) => !v)}
           >
-            <span>
+            <span style={{ color: screeningSetting ? "#333" : "#333333af" }}>
               <i
                 className={
                   settingList.find(
