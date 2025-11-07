@@ -389,72 +389,89 @@ export default function CareerForm({
         }
       `}</style>
       {formType === "add" ? (
-        <div
-          style={{
-            marginBottom: "35px",
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            width: "100%",
-          }}
-        >
-          <h1 style={{ fontSize: "24px", fontWeight: 550, color: "#111827" }}>
-            Add new career
-          </h1>
+        <>
           <div
             style={{
+              marginBottom: "10px",
               display: "flex",
               flexDirection: "row",
+              justifyContent: "space-between",
               alignItems: "center",
-              gap: "10px",
+              width: "100%",
             }}
           >
-            <button
-              disabled={!isFormValid() || isSavingCareer}
+            <h1
+              className=""
+              style={{ fontSize: "24px", fontWeight: 550, color: "#111827" }}
+            >
+              Add new career
+            </h1>
+            <div
               style={{
-                width: "fit-content",
-                color: "#414651",
-                background: "#fff",
-                border: "1px solid #D5D7DA",
-                padding: "8px 16px",
-                borderRadius: "60px",
-                cursor:
-                  !isFormValid() || isSavingCareer ? "not-allowed" : "pointer",
-                whiteSpace: "nowrap",
-              }}
-              onClick={() => {
-                confirmSaveCareer("inactive");
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: "10px",
               }}
             >
-              Save as Unpublished
-            </button>
-            <button
-              disabled={!isFormValid() || isSavingCareer}
-              style={{
-                width: "fit-content",
-                background:
-                  !isFormValid() || isSavingCareer ? "#D5D7DA" : "black",
-                color: "#fff",
-                border: "1px solid #E9EAEB",
-                padding: "8px 16px",
-                borderRadius: "60px",
-                cursor:
-                  !isFormValid() || isSavingCareer ? "not-allowed" : "pointer",
-                whiteSpace: "nowrap",
-              }}
-              onClick={() => {
-                confirmSaveCareer("active");
-              }}
-            >
-              <i
-                className="la la-check-circle"
-                style={{ color: "#fff", fontSize: 20, marginRight: 8 }}
-              ></i>
-              Save as Published
-            </button>
+              <button
+                disabled={!isFormValid() || isSavingCareer}
+                style={{
+                  width: "fit-content",
+                  color: "#414651",
+                  background: "#fff",
+                  border: "1px solid #D5D7DA",
+                  padding: "8px 16px",
+                  borderRadius: "60px",
+                  cursor:
+                    !isFormValid() || isSavingCareer
+                      ? "not-allowed"
+                      : "pointer",
+                  whiteSpace: "nowrap",
+                }}
+                onClick={() => {
+                  confirmSaveCareer("inactive");
+                }}
+              >
+                Save as Unpublished
+              </button>
+              <button
+                disabled={!isFormValid() || isSavingCareer}
+                style={{
+                  width: "fit-content",
+                  background:
+                    !isFormValid() || isSavingCareer ? "#D5D7DA" : "black",
+                  color: "#fff",
+                  border: "1px solid #E9EAEB",
+                  padding: "8px 16px",
+                  borderRadius: "60px",
+                  cursor:
+                    !isFormValid() || isSavingCareer
+                      ? "not-allowed"
+                      : "pointer",
+                  whiteSpace: "nowrap",
+                }}
+                onClick={() => {
+                  confirmSaveCareer("active");
+                }}
+              >
+                <i
+                  className="la la-check-circle"
+                  style={{ color: "#fff", fontSize: 20, marginRight: 8 }}
+                ></i>
+                Save as Published
+              </button>
+            </div>
           </div>
-        </div>
+          <hr
+            style={{
+              width: "100%",
+              border: "none",
+              borderTop: "1px solid #E9EAEB",
+              margin: "0 0 24px 0",
+            }}
+          />
+        </>
       ) : (
         <div
           style={{
@@ -720,7 +737,7 @@ export default function CareerForm({
             </FormRow>
           </CareerFormCard>
 
-          <CareerFormCard heading="Description" icon="la la-file-text">
+          <CareerFormCard heading="2. Description" icon="">
             <RichTextEditor setText={setDescription} text={description} />
           </CareerFormCard>
 

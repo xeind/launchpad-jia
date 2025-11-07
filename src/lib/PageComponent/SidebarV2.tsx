@@ -30,7 +30,7 @@ export default function SidebarV2(props: any) {
             {isAdmin ? (
               <div
                 style={{
-                  border: "1px solid #E0E0E0",
+                  // border: "1px solid #E0E0E0",
                   borderRadius: "10px",
                   padding: "8px 16px",
                   backgroundColor: "#FFFFFF",

@@ -4,7 +4,7 @@ import React from "react";
 import HeaderBar from "@/lib/PageComponent/HeaderBar";
 import OrganizationsTable from "@/lib/components/DataTables/OrganizationsTable";
 
-export default function () {
+export default function OrganizationsPage() {
   return (
     <>
       <HeaderBar activeLink="Organizations" currentPage="Overview" icon="la la-building" />

@@ -88,7 +88,7 @@ export default function Layout({ children }) {
       if (!activeMenu) {
         // Default to careers
         activeMenu = applicantLinkSet.find(
-          (x) => x.href === "/recruiter-dashboard/careers"
+          (x) => x.href === "/recruiter-dashboard/careers",
         );
       }
 
@@ -108,11 +108,30 @@ export default function Layout({ children }) {
           superAdminNavItems={superAdminNavItems}
         />
         <div
-          className="main-content bg-white"
-          id="panel"
-          style={{ marginLeft: "260px", height: "100vh", overflowY: "scroll" }}
+          style={{
+            width: "100vw",
+            height: "100vh",
+            background: "#f8f9fc",
+            padding: "24px",
+            paddingLeft: "284px",
+            overflow: "hidden",
+            boxSizing: "border-box",
+          }}
         >
-          {children}
+          <div
+            className="main-content bg-white shadow-sm"
+            id="panel"
+            style={{
+              height: "calc(100vh - 48px)",
+              borderRadius: "24px",
+              overflow: "hidden",
+              border: "1px solid #E9EAEB",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div style={{ flex: 1, overflow: "auto" }}>{children}</div>
+          </div>
         </div>
       </div>
     </>

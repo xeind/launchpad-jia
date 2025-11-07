@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 .input-group {
   background-color: #f8f9fa !important;
 }
@@ -951,7 +955,7 @@ $gifURL: "/gr-1.gif";
   overflow-y: auto;
   flex-direction: column;
   justify-content: space-between;
-  border-right: 1px solid #e9eaeb;
+  // border-right: 1px solid #e9eaeb;
 
   .sidebar-header {
     display: flex;
@@ -1247,8 +1251,8 @@ $gifURL: "/gr-1.gif";
 
   .main-content,
   #panel {
-    margin-left: 260px !important;
-    width: calc(100vw - 260px) !important;
+    // margin-left: 260px !important;
+    // width: calc(100vw - 260px) !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
   }

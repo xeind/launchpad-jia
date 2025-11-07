@@ -48,7 +48,7 @@ export default function () {
             <br />
 
             <button
-              className="btn btn-default btn-auth"
+              className="btn btn-default btn-auth flex items-center justify-center"
               onClick={() => {
                 signInWithGoogle();
               }}
@@ -58,7 +58,7 @@ export default function () {
                 src="https://companieslogo.com/img/orig/GOOG-0ed88f7c.png?t=1633218227"
                 className="mr-2"
               />
-              <span> Continue with Google</span>
+              <span>Continue with Google</span>
             </button>
 
             {/* <button

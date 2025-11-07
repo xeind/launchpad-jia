@@ -32,6 +32,7 @@ export default function CareerFormCard({
             flexDirection: "row",
             alignItems: "center",
             padding: 8,
+            paddingLeft: 10,
             paddingTop: 0,
             gap: 12,
           }}
@@ -59,7 +60,6 @@ export default function CareerFormCard({
               fontSize: 16,
               color: "#181D27",
               fontWeight: 700,
-              marginLeft: 8,
             }}
           >
             {heading}

@@ -1,5 +1,5 @@
 import UploadCV from "@/lib/components/screens/UploadCV";
 
-export default function () {
+export default function UploadCVPage() {
   return <UploadCV />;
 }
