@@ -21,8 +21,25 @@ export async function POST(request: Request) {
 
     delete dataUpdates._id;
 
+    // Ensure backward compatibility for location/city field
+    if (dataUpdates.city && !dataUpdates.location) {
+      dataUpdates.location = dataUpdates.city;
+    }
+    if (dataUpdates.location && !dataUpdates.city) {
+      dataUpdates.city = dataUpdates.location;
+    }
+
+    // Ensure backward compatibility for screening settings
+    if (dataUpdates.cvScreeningSetting && !dataUpdates.screeningSetting) {
+      dataUpdates.screeningSetting = dataUpdates.cvScreeningSetting;
+    }
+    if (dataUpdates.screeningSetting && !dataUpdates.cvScreeningSetting) {
+      dataUpdates.cvScreeningSetting = dataUpdates.screeningSetting;
+    }
+
     const career = {
       ...dataUpdates,
+      updatedAt: new Date(),
     };
 
     await db

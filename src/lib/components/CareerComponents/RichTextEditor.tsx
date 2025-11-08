@@ -55,15 +55,16 @@ export default function RichTextEditor({ setText, text }) {
     }
   }, []);
 
+  // Update editor content when text prop changes (e.g., when loading saved draft)
   useEffect(() => {
-    if (
-      descriptionEditorRef.current &&
-      !descriptionEditorRef.current.innerHTML &&
-      text
-    ) {
-      descriptionEditorRef.current.innerHTML = text;
+    if (descriptionEditorRef.current && text) {
+      // Only update if the current content doesn't match the text prop
+      // This prevents overwriting user input while they're typing
+      if (descriptionEditorRef.current.innerHTML !== text) {
+        descriptionEditorRef.current.innerHTML = text;
+      }
     }
-  }, []);
+  }, [text]);
 
   return (
     <>
@@ -170,4 +171,3 @@ export default function RichTextEditor({ setText, text }) {
     </>
   );
 }
-

@@ -589,15 +589,17 @@ tr {
 }
 
 .org-dropdown-anim {
-  opacity: 0;
-  transform: translateY(-10px);
-  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  // Animation disabled - dropdowns will appear instantly
+  // opacity: 0;
+  // transform: translateY(-10px);
+  // transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+  //   transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .org-dropdown-anim.show {
-  opacity: 1;
-  transform: translateY(0);
+  // Animation disabled
+  // opacity: 1;
+  // transform: translateY(0);
 }
 
 .active-org {
@@ -611,9 +613,9 @@ tr {
 
 .dropdown-menu .dropdown-item:hover,
 .dropdown-menu .dropdown-item:focus {
-  background: #ede7fa !important;
-  /* lighter primary */
-  color: #5e39d6 !important;
+  background: #F3F4F6 !important;
+  /* grayish hover */
+  color: #000000 !important;
 }
 
 .dropdown-menu .dropdown-item.bg-primary {

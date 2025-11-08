@@ -12573,7 +12573,7 @@ a.btn-icon-only {
 }
 .dropdown-menu .dropdown-item > i,
 .dropdown-menu .dropdown-item > svg {
-  margin-right: 1rem;
+  /* margin-right: 1rem; */
   font-size: 1rem;
   vertical-align: -17%;
 }

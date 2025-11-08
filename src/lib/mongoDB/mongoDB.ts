@@ -23,14 +23,30 @@ export default async function connectMongoDB() {
     return { client: cachedClient, db: cachedDb };
   }
 
-  const client = await MongoClient.connect(uri, {});
+  try {
+    // Parse the connection string to add/modify parameters
+    const connectionString = uri.includes('?') 
+      ? `${uri}&tlsAllowInvalidCertificates=true&tlsAllowInvalidHostnames=true`
+      : `${uri}?tlsAllowInvalidCertificates=true&tlsAllowInvalidHostnames=true`;
 
-  const db = client.db(dbName);
+    const client = await MongoClient.connect(connectionString, {
+      minPoolSize: 1,
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 30000,
+    });
 
-  cachedClient = client;
-  cachedDb = db;
+    const db = client.db(dbName);
 
-  return { client, db };
+    cachedClient = client;
+    cachedDb = db;
+
+    console.log('MongoDB connected successfully');
+    return { client, db };
+  } catch (error) {
+    console.error('MongoDB connection error:', error.message);
+    throw error;
+  }
 }
 
 export async function disconnectFromDatabase() {

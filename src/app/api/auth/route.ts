@@ -55,8 +55,19 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Authentication error:", error);
+    
+    // Check if it's a MongoDB connection error
+    const isMongoError = error.name === 'MongoServerSelectionError' || 
+                         error.name === 'MongoNetworkError';
+    
     return NextResponse.json(
-      { error: "Failed to authenticate user" },
+      { 
+        error: "Failed to authenticate user",
+        message: isMongoError 
+          ? "Database connection error. Please check your network connection or contact support."
+          : error.message || "An unexpected error occurred",
+        type: isMongoError ? "DATABASE_ERROR" : "SERVER_ERROR"
+      },
       { status: 500 }
     );
   }

@@ -1,30 +1,16 @@
 "use client";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 
-export default function CustomDropdown(props) {
+export default function Step1Dropdown(props) {
   const {
     onSelectSetting,
     screeningSetting,
     settingList,
     placeholder,
-    boldSelected = false,
+    disabled = false,
   } = props;
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Calculate the longest option text to set a fixed width
-  const longestOptionLength = useMemo(() => {
-    const allOptions = [
-      ...settingList.map((s) => s.name?.replace("_", " ") || ""),
-      placeholder,
-    ];
-    const longest = allOptions.reduce(
-      (a, b) => (a.length > b.length ? a : b),
-      "",
-    );
-    // Approximate width: 9px per character + icon space + padding + chevron + checkmark space
-    return Math.max(longest.length * 9 + 100, 220);
-  }, [settingList, placeholder]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -47,34 +33,25 @@ export default function CustomDropdown(props) {
   }, [dropdownOpen]);
 
   return (
-    <div
-      className="dropdown relative inline-block"
-      ref={dropdownRef}
-      style={{ width: `${longestOptionLength}px` }}
-    >
+    <div className="dropdown relative inline-block w-full" ref={dropdownRef}>
       <button
-        disabled={settingList.length === 0}
+        disabled={settingList.length === 0 || disabled}
         className={`
           w-full
-          bg-white
-          border border-gray-300
           rounded-lg
           px-4 py-2.5
           text-base
           font-medium
-          text-[#181D27]
           capitalize
-          cursor-pointer
           flex items-center gap-2
           transition-colors duration-200
-          ${screeningSetting ? "hover:bg-gray-100" : ""}
+          ${disabled ? "!bg-gray-300 !border-gray-400 !text-gray-500 !cursor-not-allowed pointer-events-none" : "bg-white border border-gray-300 text-[#181D27] cursor-pointer"}
+          ${!disabled && screeningSetting ? "hover:bg-gray-100" : ""}
         `}
         type="button"
-        onClick={() => setDropdownOpen((v) => !v)}
+        onClick={() => !disabled && setDropdownOpen((v) => !v)}
       >
-        <span
-          className={screeningSetting ? "text-gray-800" : "text-gray-400"}
-        >
+        <span className={disabled ? "!text-gray-500" : (screeningSetting ? "text-gray-800" : "text-gray-400")}>
           <i
             className={
               settingList.find((setting) => setting.name === screeningSetting)
@@ -83,7 +60,7 @@ export default function CustomDropdown(props) {
           ></i>{" "}
           {screeningSetting?.replace("_", " ") || placeholder}
         </span>
-        <i className="la la-angle-down ml-auto"></i>
+        <i className={`la la-angle-down ml-auto ${disabled ? "!text-gray-500" : ""}`}></i>
       </button>
       <div
         className={`
@@ -119,14 +96,14 @@ export default function CustomDropdown(props) {
                 overflow-hidden
                 py-2.5 px-3
                 text-black
-                ${boldSelected && screeningSetting === setting.name ? "font-bold" : "font-medium"}
+                font-medium
                 bg-transparent
                 !flex !flex-row !justify-between !items-center
                 capitalize
                 border-none
                 cursor-pointer
                 transition-colors duration-150
-                hover:bg-gray-100
+                hover:bg-gray-300
               `}
               onClick={() => {
                 onSelectSetting(setting.name);

@@ -34,7 +34,13 @@ export async function GET(req: Request) {
         }
 
         if (status && status !== "All Statuses") {
-            filter.status = status === "Published" ? "active" : "inactive";
+            if (status === "Published") {
+                filter.status = "active";
+            } else if (status === "Unpublished") {
+                filter.status = "inactive";
+            } else if (status === "Draft") {
+                filter.status = "draft";
+            }
         }
 
         const careers = await db

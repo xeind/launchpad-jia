@@ -24,13 +24,27 @@ export async function POST(request: Request) {
       country,
       province,
       employmentType,
+      // New fields from segmented form
+      city,
+      currency,
+      teamMembers,
+      cvScreeningSetting,
+      cvSecretPrompt,
+      preScreeningQuestions,
+      aiInterviewScreeningSetting,
+      aiInterviewSecretPrompt,
+      aiInterviewQuestions,
+      pipelineStages,
+      isDraft,
+      currentStep,
+      completedSteps,
     } = await request.json();
     // Validate required fields
-    if (!jobTitle || !description || !questions || !location || !workSetup) {
+    if (!jobTitle || !description || !location || !workSetup) {
       return NextResponse.json(
         {
           error:
-            "Job title, description, questions, location and work setup are required",
+            "Job title, description, location and work setup are required",
         },
         { status: 400 }
       );
@@ -82,8 +96,9 @@ export async function POST(request: Request) {
       id: guid(),
       jobTitle,
       description,
-      questions,
-      location,
+      questions: questions || [], // Legacy field, kept for backward compatibility
+      location: location || city, // Use city if location not provided
+      city: city || location,
       workSetup,
       workSetupRemarks,
       createdAt: new Date(),
@@ -91,16 +106,35 @@ export async function POST(request: Request) {
       lastEditedBy,
       createdBy,
       status: status || "active",
-      screeningSetting,
+      screeningSetting: screeningSetting || cvScreeningSetting || "Good Fit and above",
       orgID,
-      requireVideo,
+      requireVideo: requireVideo ?? false,
       lastActivityAt: new Date(),
-      salaryNegotiable,
+      salaryNegotiable: salaryNegotiable ?? true,
       minimumSalary,
       maximumSalary,
-      country,
+      country: country || "Philippines",
       province,
-      employmentType,
+      employmentType: employmentType || "Full-Time",
+      currency: currency || "PHP",
+      teamMembers: teamMembers || [],
+      // New segmented form fields
+      cvScreeningSetting: cvScreeningSetting || screeningSetting || "Good Fit and above",
+      cvSecretPrompt: cvSecretPrompt || "",
+      preScreeningQuestions: preScreeningQuestions || [],
+      aiInterviewScreeningSetting: aiInterviewScreeningSetting || cvScreeningSetting || screeningSetting || "Good Fit and above",
+      aiInterviewSecretPrompt: aiInterviewSecretPrompt || "",
+      aiInterviewQuestions: aiInterviewQuestions || {
+        cvValidation: { questions: [], questionsToAsk: 0 },
+        technical: { questions: [], questionsToAsk: 0 },
+        behavioral: { questions: [], questionsToAsk: 0 },
+        analytical: { questions: [], questionsToAsk: 0 },
+        others: { questions: [], questionsToAsk: 0 },
+      },
+      pipelineStages: pipelineStages || [],
+      isDraft: isDraft ?? false,
+      currentStep: currentStep || "review",
+      completedSteps: completedSteps || [],
     };
 
     await db.collection("careers").insertOne(career);

@@ -100,7 +100,7 @@ export default function HeaderBar(props: {
                   <div className="flex items-center mr-2.5">
                     <i
                       className={`${icon || "la la-home"} text-gray`}
-                      style={{ fontSize: 24 }}
+                      style={{ fontSize: 16 }}
                     ></i>
                   </div>
                   <div className="flex items-center mr-2.5">

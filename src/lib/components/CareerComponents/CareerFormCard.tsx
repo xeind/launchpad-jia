@@ -5,6 +5,7 @@ export default function CareerFormCard({
   children,
   className = "",
   style,
+  customIcon,
 }: {
   heading: string;
   icon?: string;
@@ -12,6 +13,7 @@ export default function CareerFormCard({
   children: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
+  customIcon?: React.ReactNode;
 }) {
   return (
     <div
@@ -37,22 +39,27 @@ export default function CareerFormCard({
             gap: 12,
           }}
         >
-          {icon && (
+          {(icon || customIcon) && (
             <div
               style={{
                 width: 32,
                 height: 32,
-                backgroundColor: iconBgColor,
+                background: iconBgColor,
                 borderRadius: "50%",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <i
-                className={icon}
-                style={{ color: "#FFFFFF", fontSize: 20 }}
-              ></i>
+              {customIcon || (
+                <i
+                  className={icon}
+                  style={{ 
+                    color: "#FFFFFF", 
+                    fontSize: 20 
+                  }}
+                ></i>
+              )}
             </div>
           )}
           <span

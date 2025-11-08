@@ -36,7 +36,12 @@ export default function CareersV2Table() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedCareer, setSelectedCareer] = useState(null);
   const [filterStatus, setFilterStatus] = useState("All Statuses");
-  const filterStatusOptions = ["All Statuses", "Published", "Unpublished"];
+  const filterStatusOptions = [
+    "All Statuses",
+    "Published",
+    "Unpublished",
+    "Draft",
+  ];
   const [sortBy, setSortBy] = useState("Recent Activity");
   const sortByOptions = {
     // Default sort
@@ -101,7 +106,7 @@ export default function CareersV2Table() {
         });
         setAvailableJobSlots(
           (orgDetails.data?.plan?.jobLimit || 3) +
-            (orgDetails.data?.extraJobSlots || 0),
+            (orgDetails.data?.extraJobSlots || 0)
         );
       } catch (error) {
         console.error("Error fetching org details:", error);
@@ -424,7 +429,12 @@ export default function CareersV2Table() {
                             onClick={(e) => {
                               if (e.defaultPrevented) return;
                               e.preventDefault();
-                              window.location.href = `/recruiter-dashboard/careers/manage/${item._id}`;
+                              // Route drafts to CareerForm edit page, published careers to manage page
+                              if (item.isDraft === true || item.status === "draft") {
+                                window.location.href = `/recruiter-dashboard/careers/edit/${item._id}`;
+                              } else {
+                                window.location.href = `/recruiter-dashboard/careers/manage/${item._id}`;
+                              }
                             }}
                           >
                             <th
@@ -516,7 +526,12 @@ export default function CareersV2Table() {
                                           if (e.defaultPrevented) return;
                                           e.preventDefault();
                                           setMenuOpen(false);
-                                          window.location.href = `/recruiter-dashboard/careers/manage/${item._id}?tab=edit`;
+                                          // Route drafts to CareerForm edit page, published careers to manage page
+                                          if (item.isDraft === true || item.status === "draft") {
+                                            window.location.href = `/recruiter-dashboard/careers/edit/${item._id}`;
+                                          } else {
+                                            window.location.href = `/recruiter-dashboard/careers/manage/${item._id}?tab=edit`;
+                                          }
                                         }}
                                       >
                                         <span>Edit Career</span>

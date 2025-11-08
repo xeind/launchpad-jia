@@ -1,7 +1,8 @@
 .fade-in-bottom {
-  -webkit-animation: fade-in-bottom 0.7s cubic-bezier(0.39, 0.575, 0.565, 1)
-    both;
-  animation: fade-in-bottom 0.7s cubic-bezier(0.39, 0.575, 0.565, 1) both;
+  // Animation disabled - elements will appear instantly without fade-in effect
+  // -webkit-animation: fade-in-bottom 0.7s cubic-bezier(0.39, 0.575, 0.565, 1)
+  //   both;
+  // animation: fade-in-bottom 0.7s cubic-bezier(0.39, 0.575, 0.565, 1) both;
 }
 
 @-webkit-keyframes fade-in-bottom {
