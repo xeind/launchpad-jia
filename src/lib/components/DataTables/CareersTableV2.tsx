@@ -484,8 +484,8 @@ export default function CareersV2Table() {
                               {moment(item.createdAt).format("MMM DD, YYYY")}
                             </td>
                             <td>
-                              {item.lastActivityAt
-                                ? moment(item.lastActivityAt).format(
+                              {item.updatedAt
+                                ? moment(item.updatedAt).format(
                                     "MMM DD, YYYY",
                                   )
                                 : "N/A"}

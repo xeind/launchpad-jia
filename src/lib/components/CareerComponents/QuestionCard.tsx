@@ -265,13 +265,16 @@ export default function QuestionCard({
             <hr className="border-t border-gray-300 my-4" />
 
             {/* Delete Button */}
-            <button
-              className="w-full bg-transparent text-red-500 border border-red-300 px-4 py-2 rounded-md cursor-pointer text-sm font-medium hover:bg-red-50 transition-colors"
-              onClick={onDeleteAction}
-            >
-              <i className="la la-trash text-base mr-2"></i>
-              Delete Question
-            </button>
+            <div className="flex justify-end">
+              <button
+                className="bg-transparent rounded-full text-red-500 p-2 cursor-pointer text-sm font-medium hover:bg-red-50 transition-colors w-auto"
+                style={{ border: "1px solid #ef4444" }}
+                onClick={onDeleteAction}
+              >
+                <i className="la la-trash text-base mr-2"></i>
+                Delete Question
+              </button>
+            </div>
           </div>
         </div>
       </div>

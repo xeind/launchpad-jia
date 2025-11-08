@@ -45,7 +45,7 @@ export default function Step1Dropdown(props) {
           capitalize
           flex items-center gap-2
           transition-colors duration-200
-          ${disabled ? "!bg-gray-300 !border-gray-400 !text-gray-500 !cursor-not-allowed pointer-events-none" : "bg-white border border-gray-300 text-[#181D27] cursor-pointer"}
+          ${disabled ? "!bg-gray-50 !border-0 !text-gray-500 !cursor-not-allowed pointer-events-none" : "bg-white border border-gray-300 text-[#181D27] cursor-pointer"}
           ${!disabled && screeningSetting ? "hover:bg-gray-100" : ""}
         `}
         type="button"

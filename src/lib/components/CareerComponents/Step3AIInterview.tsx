@@ -7,7 +7,23 @@ import CareerFormCard from "./CareerFormCard";
 import FormLabel from "./FormLabel";
 import FormSectionHeader from "./FormSectionHeader";
 import FormField from "./FormField";
+import AIQuestionCard from "./AIQuestionCard";
 import { errorToast } from "@/lib/Utils";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 const screeningSettingList = [
   { name: "Good Fit and above", icon: "la la-check" },
@@ -38,8 +54,11 @@ export default function Step3AIInterview() {
     aiInterviewQuestions,
     updateField,
     generateAIQuestions,
+    generateAllAIQuestions,
     addAIQuestion,
+    updateAIQuestion,
     removeAIQuestion,
+    reorderAIQuestions,
     updateQuestionsToAsk,
     nextStep,
     previousStep,
@@ -47,18 +66,33 @@ export default function Step3AIInterview() {
     errors,
   } = useCareerFormStore();
 
-  const [customQuestions, setCustomQuestions] = useState<
-    Record<QuestionCategory, string>
-  >({
-    cvValidation: "",
-    technical: "",
-    behavioral: "",
-    analytical: "",
-    others: "",
-  });
-
   const [generatingCategory, setGeneratingCategory] =
     useState<QuestionCategory | null>(null);
+
+  const [newQuestionIndex, setNewQuestionIndex] = useState<{
+    category: QuestionCategory | null;
+    index: number;
+  }>({ category: null, index: -1 });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent, category: QuestionCategory) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const questions = aiInterviewQuestions[category].questions;
+      const oldIndex = questions.findIndex((q) => q.id === active.id);
+      const newIndex = questions.findIndex((q) => q.id === over.id);
+
+      const reorderedQuestions = arrayMove(questions, oldIndex, newIndex);
+      reorderAIQuestions(category, reorderedQuestions);
+    }
+  };
 
   const handleGenerateQuestions = async (category: QuestionCategory) => {
     setGeneratingCategory(category);
@@ -72,30 +106,16 @@ export default function Step3AIInterview() {
   const handleGenerateAll = async () => {
     setGeneratingCategory("cvValidation");
     try {
-      const categories: QuestionCategory[] = [
-        "cvValidation",
-        "technical",
-        "behavioral",
-        "analytical",
-        "others",
-      ];
-      for (const category of categories) {
-        setGeneratingCategory(category);
-        await generateAIQuestions(category);
-      }
+      await generateAllAIQuestions();
     } finally {
       setGeneratingCategory(null);
     }
   };
 
   const handleAddCustomQuestion = (category: QuestionCategory) => {
-    const question = customQuestions[category].trim();
-    if (!question) {
-      errorToast("Please enter a question", 1300);
-      return;
-    }
-    addAIQuestion(category, question);
-    setCustomQuestions({ ...customQuestions, [category]: "" });
+    addAIQuestion(category, "");
+    const newIndex = aiInterviewQuestions[category].questions.length;
+    setNewQuestionIndex({ category, index: newIndex });
   };
 
   const handleNext = async () => {
@@ -127,29 +147,13 @@ export default function Step3AIInterview() {
 
   return (
     <>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
-          width: "100%",
-          gap: 16,
-          alignItems: "flex-start",
-        }}
-      >
-        <div
-          style={{
-            width: "80%",
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-          }}
-        >
+      <div className="flex flex-row justify-between w-full gap-4 items-start">
+        <div className="w-4/5 flex flex-col gap-2">
           <CareerFormCard heading="1. AI Interview Settings" icon="">
             <FormSectionHeader marginTop={8}>
               AI Interview Screening
             </FormSectionHeader>
-            <p style={{ fontSize: 14, color: "#6B7280", marginBottom: 12 }}>
+            <p className="text-md font-normal text-gray-600 md-3">
               Jia automatically endorses candidates who meet the chosen criteria
             </p>
             <FormField>
@@ -163,78 +167,99 @@ export default function Step3AIInterview() {
               />
             </FormField>
 
-            <FormSectionHeader>Require Video on Interview</FormSectionHeader>
-            <p style={{ fontSize: 14, color: "#6B7280", marginBottom: 12 }}>
-              Require candidates to keep their camera on. Recordings will appear
-              on their analysis page.
-            </p>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 12,
-              }}
-            >
-              <label
-                className="switch"
-                style={{ margin: 0, display: "flex", alignItems: "center" }}
-              >
-                <input
-                  type="checkbox"
-                  checked={requireVideo}
-                  onChange={() => updateField("requireVideo", !requireVideo)}
-                />
-                <span className="slider round"></span>
-              </label>
-              <span style={{ fontSize: 14, color: "#414651" }}>
-                {requireVideo ? "Required" : "Optional"}
-              </span>
-            </div>
+            <hr className="border-t border-gray-300 mt-2 mb-2" />
 
-            <FormSectionHeader>AI Interview Secret Prompts</FormSectionHeader>
-            <FormField>
-              <textarea
-                value={aiInterviewSecretPrompt}
-                className="form-control"
-                placeholder="Enter additional instructions for Jia's interview evaluation"
-                onChange={(e) => {
-                  updateField("aiInterviewSecretPrompt", e.target.value);
-                }}
-                style={{
-                  minHeight: 100,
-                  resize: "vertical",
-                }}
-              />
-            </FormField>
-          </CareerFormCard>
-
-          <CareerFormCard heading="2. AI Interview Questions" icon="">
             <div
               style={{
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
+              }}
+            >
+              <FormSectionHeader marginTop={0}>
+                Require Video on Interview
+              </FormSectionHeader>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                <span style={{ fontSize: 14, color: "#414651" }}>
+                  {requireVideo ? "Required" : "Optional"}
+                </span>
+                <label
+                  className="switch"
+                  style={{ margin: 0, display: "flex", alignItems: "center" }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={requireVideo}
+                    onChange={() => updateField("requireVideo", !requireVideo)}
+                  />
+                  <span className="slider round"></span>
+                </label>
+              </div>
+            </div>
+            <p className="text-md font-normal text-gray-600 mb-3">
+              Require candidates to keep their camera on. Recordings will appear
+              on their analysis page.
+            </p>
+
+            <hr className="border-t border-gray-300 mt-2 mb-2" />
+
+            <FormSectionHeader>AI Interview Secret Prompts</FormSectionHeader>
+            <p className="text-md font-normal text-gray-700 mb-3">
+              Secret Prompts give you extra control over Jia&apos;s evaluation
+              style, complementing her accurate assessment of requirements from
+              the job description.
+            </p>
+            <FormField>
+              <textarea
+                value={aiInterviewSecretPrompt}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg !resize-none !h-20 !overflow-y-auto text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter a secret prompt (e.g. Treat candidates who speak in Taglish, English, or Tagalog equally. Focus on clarity, coherence, and confidence rather than language preference or accent.)"
+                onChange={(e) => {
+                  updateField("aiInterviewSecretPrompt", e.target.value);
+                }}
+              />
+            </FormField>
+          </CareerFormCard>
+
+          <CareerFormCard heading="" icon="">
+            {/* Card Header with Title, Badge, and Generate All Button */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
                 marginBottom: 16,
               }}
             >
-              <div>
-                <p style={{ fontSize: 14, color: "#6B7280", margin: 0 }}>
-                  Total Questions: {totalQuestions}{" "}
-                  {totalQuestions < 5 && (
-                    <span style={{ color: "#EF4444" }}>
-                      (Minimum 5 required)
-                    </span>
-                  )}
-                </p>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>
+                  2. AI Interview Questions
+                </h3>
+                <span
+                  style={{
+                    background: totalQuestions < 5 ? "#FEE2E2" : "#DBEAFE",
+                    color: totalQuestions < 5 ? "#DC2626" : "#1E40AF",
+                    padding: "4px 12px",
+                    borderRadius: "12px",
+                    fontSize: 14,
+                    fontWeight: 600,
+                  }}
+                >
+                  {totalQuestions}
+                </span>
               </div>
               <button
                 style={{
-                  background: "#10B981",
                   color: "#fff",
                   border: "none",
-                  padding: "8px 16px",
-                  borderRadius: "8px",
+                  padding: "10px 16px",
                   cursor: generatingCategory ? "not-allowed" : "pointer",
                   fontSize: 14,
                   fontWeight: 500,
@@ -243,211 +268,211 @@ export default function Step3AIInterview() {
                   gap: 8,
                   opacity: generatingCategory ? 0.6 : 1,
                 }}
+                className="bg-black rounded-full"
                 onClick={handleGenerateAll}
                 disabled={!!generatingCategory}
               >
-                <i className="la la-magic" style={{ fontSize: 16 }}></i>
+                <i className="la la-magic"></i>
                 {generatingCategory
                   ? "Generating..."
-                  : "Generate All Questions"}
+                  : "Generate all questions"}
               </button>
             </div>
 
+            {totalQuestions < 5 && (
+              <p
+                style={{
+                  fontSize: 14,
+                  color: "#EF4444",
+                  marginTop: -8,
+                  marginBottom: 16,
+                }}
+              >
+                Minimum 5 questions required ({5 - totalQuestions} more needed)
+              </p>
+            )}
+
             {(Object.keys(CATEGORY_LABELS) as QuestionCategory[]).map(
-              (category) => (
-                <div
-                  key={category}
-                  style={{
-                    marginBottom: 24,
-                    padding: 16,
-                    border: "1px solid #E5E7EB",
-                    borderRadius: 8,
-                    background: "#FAFAFA",
-                  }}
-                >
+              (category, index) => (
+                <div key={category}>
+                  {index > 0 && (
+                    <hr className="border-t border-gray-300 my-4" />
+                  )}
+
+                  {/* Category Header */}
+                  <FormSectionHeader marginBottom={8}>
+                    {CATEGORY_LABELS[category]}
+                  </FormSectionHeader>
+                  {/* Questions List */}
+                  {aiInterviewQuestions[category].questions.length > 0 ? (
+                    <div style={{ marginBottom: 8 }}>
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={(event) => handleDragEnd(event, category)}
+                      >
+                        <SortableContext
+                          items={aiInterviewQuestions[category].questions.map(
+                            (q) => q.id,
+                          )}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          {aiInterviewQuestions[category].questions.map(
+                            (q, idx) => (
+                              <AIQuestionCard
+                                key={q.id}
+                                id={q.id}
+                                question={q.text}
+                                index={idx}
+                                onUpdateAction={(questionText) =>
+                                  updateAIQuestion(category, q.id, questionText)
+                                }
+                                onDeleteAction={() =>
+                                  removeAIQuestion(category, q.id)
+                                }
+                                startInEditMode={
+                                  newQuestionIndex.category === category &&
+                                  newQuestionIndex.index === idx
+                                }
+                              />
+                            ),
+                          )}
+                        </SortableContext>
+                      </DndContext>
+                    </div>
+                  ) : (
+                    <p
+                      style={{
+                        fontSize: 14,
+                        color: "#9CA3AF",
+                        marginBottom: 16,
+                        fontStyle: "italic",
+                      }}
+                    >
+                      No questions added yet. Generate or add manually below.
+                    </p>
+                  )}
+
+                  {/* Bottom row: Generate + Add Manually on left, Questions to Ask on right */}
                   <div
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-                      marginBottom: 12,
+                      gap: 12,
                     }}
                   >
-                    <h4 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>
-                      {CATEGORY_LABELS[category]}
-                    </h4>
-                    <button
-                      style={{
-                        background: "#3B82F6",
-                        color: "#fff",
-                        border: "none",
-                        padding: "6px 12px",
-                        borderRadius: "6px",
-                        cursor: generatingCategory ? "not-allowed" : "pointer",
-                        fontSize: 13,
-                        fontWeight: 500,
-                        opacity: generatingCategory ? 0.6 : 1,
-                      }}
-                      onClick={() => handleGenerateQuestions(category)}
-                      disabled={!!generatingCategory}
-                    >
-                      {generatingCategory === category ? (
-                        <>
-                          <i
-                            className="la la-spinner la-spin"
-                            style={{ marginRight: 4 }}
-                          ></i>
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <i
-                            className="la la-magic"
-                            style={{ marginRight: 4 }}
-                          ></i>
-                          Generate Questions
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Questions List */}
-                  {aiInterviewQuestions[category].questions.length > 0 && (
-                    <div style={{ marginBottom: 12 }}>
-                      {aiInterviewQuestions[category].questions.map(
-                        (q, idx) => (
-                          <div
-                            key={idx}
-                            style={{
-                              background: "#fff",
-                              border: "1px solid #E5E7EB",
-                              borderRadius: 6,
-                              padding: 12,
-                              marginBottom: 8,
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                            }}
-                          >
-                            <span
-                              style={{
-                                fontSize: 14,
-                                color: "#374151",
-                                flex: 1,
-                              }}
-                            >
-                              {idx + 1}. {q}
-                            </span>
-                            <button
-                              style={{
-                                background: "transparent",
-                                border: "none",
-                                color: "#EF4444",
-                                cursor: "pointer",
-                                padding: 4,
-                              }}
-                              onClick={() => removeAIQuestion(category, idx)}
-                            >
-                              <i
-                                className="la la-trash"
-                                style={{ fontSize: 16 }}
-                              ></i>
-                            </button>
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  )}
-
-                  {/* Add Custom Question */}
-                  <div style={{ marginBottom: 12 }}>
+                    {/* Left side: Action buttons */}
                     <div
                       style={{
                         display: "flex",
-                        gap: 8,
-                        alignItems: "flex-end",
+                        alignItems: "center",
+                        gap: 12,
                       }}
                     >
-                      <div style={{ flex: 1 }}>
-                        <FormLabel>Add Custom Question</FormLabel>
-                        <input
-                          value={customQuestions[category]}
-                          className="form-control"
-                          placeholder="Type your custom question here"
-                          onChange={(e) =>
-                            setCustomQuestions({
-                              ...customQuestions,
-                              [category]: e.target.value,
-                            })
-                          }
-                          onKeyPress={(e) => {
-                            if (e.key === "Enter") {
-                              handleAddCustomQuestion(category);
-                            }
-                          }}
-                        />
-                      </div>
+                      <button
+                        style={{
+                          color: "#fff",
+                          border: "none",
+                          padding: "10px 16px",
+                          cursor: generatingCategory
+                            ? "not-allowed"
+                            : "pointer",
+                          fontSize: 14,
+                          fontWeight: 500,
+                          opacity: generatingCategory ? 0.6 : 1,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                        className="bg-black rounded-full"
+                        onClick={() => handleGenerateQuestions(category)}
+                        disabled={!!generatingCategory}
+                      >
+                        {generatingCategory === category ? (
+                          <>
+                            <i className="la la-spinner la-spin"></i>
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <i className="la la-magic"></i>
+                            Generate questions
+                          </>
+                        )}
+                      </button>
+
                       <button
                         style={{
                           background: "#fff",
-                          color: "#3B82F6",
-                          border: "1px solid #3B82F6",
+                          color: "#000",
+                          border: "1px solid #000",
                           padding: "10px 16px",
-                          borderRadius: "6px",
                           cursor: "pointer",
                           fontSize: 14,
                           fontWeight: 500,
-                          height: "fit-content",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
                         }}
+                        className="bg-white text-black border border-gray-600 flex font-normal rounded-full"
                         onClick={() => handleAddCustomQuestion(category)}
                       >
-                        <i
-                          className="la la-plus"
-                          style={{ fontSize: 14, marginRight: 4 }}
-                        ></i>
-                        Add
+                        <i className="la la-plus"></i>
+                        Add Manually
                       </button>
                     </div>
-                  </div>
 
-                  {/* Questions to Ask */}
-                  <FormField>
-                    <FormLabel>
-                      # of questions to ask from this category
-                    </FormLabel>
-                    <input
-                      type="number"
-                      min="0"
-                      max={aiInterviewQuestions[category].questions.length}
-                      value={aiInterviewQuestions[category].questionsToAsk}
-                      className="form-control"
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value) || 0;
-                        const max =
-                          aiInterviewQuestions[category].questions.length;
-                        updateQuestionsToAsk(category, Math.min(value, max));
+                    {/* Right side: Questions to Ask */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
                       }}
-                      style={{ width: 120 }}
-                    />
-                    <p style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>
-                      Available questions:{" "}
-                      {aiInterviewQuestions[category].questions.length}
-                    </p>
-                  </FormField>
+                    >
+                      <span style={{ fontSize: 14, color: "#374151" }}>
+                        Questions to ask
+                      </span>
+                      <input
+                        type="number"
+                        min="0"
+                        max={aiInterviewQuestions[category].questions.length}
+                        value={
+                          aiInterviewQuestions[category].questionsToAsk === 0
+                            ? ""
+                            : aiInterviewQuestions[category].questionsToAsk
+                        }
+                        className="form-control"
+                        placeholder="0"
+                        onChange={(e) => {
+                          const value =
+                            e.target.value === ""
+                              ? 0
+                              : parseInt(e.target.value);
+                          const max =
+                            aiInterviewQuestions[category].questions.length;
+                          updateQuestionsToAsk(
+                            category,
+                            Math.min(Math.max(0, value), max),
+                          );
+                        }}
+                        onFocus={(e) => e.target.select()}
+                        style={{
+                          width: 60,
+                          textAlign: "center",
+                          padding: "8px 4px",
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
               ),
             )}
           </CareerFormCard>
         </div>
 
-        <div
-          style={{
-            width: "20%",
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-          }}
-        >
+        <div className="w-1/5 flex flex-col gap-2">
           <CareerFormCard
             heading="Tips"
             iconBgColor="#181D27"
@@ -483,32 +508,22 @@ export default function Step3AIInterview() {
               </svg>
             }
           >
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <ul
-                style={{
-                  margin: 0,
-                  paddingLeft: 0,
-                  fontSize: 14,
-                  color: "#414651",
-                  lineHeight: 1.6,
-                }}
-              >
-                <li style={{ marginBottom: 12 }}>
-                  <span style={{ fontWeight: 500 }}>Mix question types</span> –
-                  Balance technical, behavioral, and analytical questions for a
-                  comprehensive evaluation.
-                </li>
-                <li style={{ marginBottom: 12 }}>
-                  <span style={{ fontWeight: 500 }}>Use AI generation</span> –
-                  Let Jia generate questions based on your job description, then
-                  customize as needed.
-                </li>
-                <li>
-                  <span style={{ fontWeight: 500 }}>Keep it focused</span> – Aim
-                  for 5-10 questions total to respect candidate time while
-                  gathering sufficient insight.
-                </li>
-              </ul>
+            <div className="flex flex-col gap-3">
+              <p className="m-0 text-sm text-gray-700 leading-relaxed">
+                <span className="font-semibold">Mix question types</span> –
+                Balance technical, behavioral, and analytical questions for a
+                comprehensive evaluation.
+              </p>
+              <p className="m-0 text-sm text-gray-700 leading-relaxed">
+                <span className="font-semibold">Use AI generation</span> – Let
+                Jia generate questions based on your job description, then
+                customize as needed.
+              </p>
+              <p className="m-0 text-sm text-gray-700 leading-relaxed">
+                <span className="font-semibold">Keep it focused</span> – Aim for
+                5-10 questions total to respect candidate time while gathering
+                sufficient insight.
+              </p>
             </div>
           </CareerFormCard>
         </div>

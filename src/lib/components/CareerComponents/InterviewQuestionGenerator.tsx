@@ -25,7 +25,7 @@ export default function (props) {
               style="height: 150px"
             ></textarea>`,
       showCancelButton: true,
-      confirmButtonText: "Add Question",
+      confirmButtonText: "Add custom",
       preConfirm: () => {
         const questionText = (
           document.getElementById("questionText") as HTMLInputElement
@@ -81,7 +81,7 @@ export default function (props) {
     }).then((result) => {
       if (result.isConfirmed) {
         const categoryIndex = questions.findIndex(
-          (q) => q.category === category
+          (q) => q.category === category,
         );
 
         const updatedQuestions = [...questions];
@@ -89,7 +89,7 @@ export default function (props) {
           updatedQuestions[categoryIndex].questions = updatedQuestions[
             categoryIndex
           ].questions.map((q) =>
-            q.id === question.id ? { ...q, question: result.value } : q
+            q.id === question.id ? { ...q, question: result.value } : q,
           );
         }
 
@@ -113,34 +113,35 @@ export default function (props) {
       Swal.showLoading();
       const interviewCategories = Object.keys(interviewQuestionCategoryMap);
       const response = await axios.post("/api/llm-engine", {
-      systemPrompt:
-        "You are a helpful assistant that can answer questions and help with tasks.",
-      prompt: `Generate ${questionCount * interviewCategories.length} interview questions for the following Job opening: 
+        systemPrompt:
+          "You are a helpful assistant that can answer questions and help with tasks.",
+        prompt: `Generate ${questionCount * interviewCategories.length} interview questions for the following Job opening: 
         Job Title:
         ${jobTitle} 
         Job Description:
         ${description}
   
-        ${interviewCategories.map((category) => {
-          return `Category:
+        ${interviewCategories
+          .map((category) => {
+            return `Category:
           ${category}
           Category Description:
-          ${interviewQuestionCategoryMap[category].description}`
-        }).join("\n")}
+          ${interviewQuestionCategoryMap[category].description}`;
+          })
+          .join("\n")}
   
         ${interviewCategories.map((category) => `${questionCount} questions for ${category}`).join(", ")}
 
         ${
-          questions.reduce((acc, group) => acc + group.questions.length, 0) >
-          0
+          questions.reduce((acc, group) => acc + group.questions.length, 0) > 0
             ? `Do not generate questions that are already covered in this list:\n${questions
                 .map((group) =>
                   group.questions
                     .map(
                       (question, index) =>
-                        `          ${index + 1}. ${question.question}`
+                        `          ${index + 1}. ${question.question}`,
                     )
-                    .join("\n")
+                    .join("\n"),
                 )
                 .join("\n")}`
             : ""
@@ -149,43 +150,43 @@ export default function (props) {
         return it in json format following this for each element {category: "category", questions: ["question1", "question2", "question3", "question4", "question5"]}
         return only the json array, nothing else, now markdown format just pure json code.
         `,
-    });
+      });
 
-    let finalGeneratedQuestions = response.data.result;
+      let finalGeneratedQuestions = response.data.result;
 
-    finalGeneratedQuestions = finalGeneratedQuestions.replace("```json", "");
-    finalGeneratedQuestions = finalGeneratedQuestions.replace("```", "");
+      finalGeneratedQuestions = finalGeneratedQuestions.replace("```json", "");
+      finalGeneratedQuestions = finalGeneratedQuestions.replace("```", "");
 
-    finalGeneratedQuestions = JSON.parse(finalGeneratedQuestions);
-    console.log(finalGeneratedQuestions);
+      finalGeneratedQuestions = JSON.parse(finalGeneratedQuestions);
+      console.log(finalGeneratedQuestions);
 
-    let newArray = [...questions];
+      let newArray = [...questions];
 
-    finalGeneratedQuestions.forEach((questionGroup) => {
-      const categoryIndex = newArray.findIndex(
-        (q) => q.category === questionGroup.category
-      );
-  
-      if (categoryIndex !== -1) {
-        const newQuestions = questionGroup.questions.map((q) => ({
-          id: guid(),
-          question: q,
-        }));
-        newArray[categoryIndex].questions = [
-          ...newArray[categoryIndex].questions,
-          ...newQuestions,
-        ];
-      }
-    })
+      finalGeneratedQuestions.forEach((questionGroup) => {
+        const categoryIndex = newArray.findIndex(
+          (q) => q.category === questionGroup.category,
+        );
 
-    console.log(newArray);
+        if (categoryIndex !== -1) {
+          const newQuestions = questionGroup.questions.map((q) => ({
+            id: guid(),
+            question: q,
+          }));
+          newArray[categoryIndex].questions = [
+            ...newArray[categoryIndex].questions,
+            ...newQuestions,
+          ];
+        }
+      });
 
-    setQuestions(newArray);
+      console.log(newArray);
 
-    successToast("Questions generated successfully", 1500);
+      setQuestions(newArray);
 
-    Swal.close();
-    } catch(err) {
+      successToast("Questions generated successfully", 1500);
+
+      Swal.close();
+    } catch (err) {
       console.log(err);
       errorToast("Error generating questions, please try again", 1500);
     }
@@ -231,9 +232,9 @@ export default function (props) {
                     group.questions
                       .map(
                         (question, index) =>
-                          `          ${index + 1}. ${question.question}`
+                          `          ${index + 1}. ${question.question}`,
                       )
-                      .join("\n")
+                      .join("\n"),
                   )
                   .join("\n")}`
               : ""
@@ -256,7 +257,7 @@ export default function (props) {
       let newArray = [...questions];
 
       const categoryIndex = newArray.findIndex(
-        (q) => q.category === finalGeneratedQuestions.category
+        (q) => q.category === finalGeneratedQuestions.category,
       );
 
       if (categoryIndex !== -1) {
@@ -285,11 +286,11 @@ export default function (props) {
 
   function handleReorderCategories(
     draggedCategoryId: number,
-    dropIndex: number
+    dropIndex: number,
   ) {
     const updatedQuestions = [...questions];
     const draggedCategoryIndex = updatedQuestions.findIndex(
-      (q) => q.id === draggedCategoryId
+      (q) => q.id === draggedCategoryId,
     );
     const draggedCategory = updatedQuestions[draggedCategoryIndex];
 
@@ -304,17 +305,17 @@ export default function (props) {
     draggedQuestionId: string,
     fromCategoryId: number,
     toCategoryId: number,
-    insertIndex?: number
+    insertIndex?: number,
   ) {
     const updatedQuestions = [...questions];
 
     // Find source category and question
     const fromCategoryIndex = updatedQuestions.findIndex(
-      (q) => q.id === fromCategoryId
+      (q) => q.id === fromCategoryId,
     );
     const categoryOrigin = updatedQuestions[fromCategoryIndex];
     const questionIndex = categoryOrigin.questions.findIndex(
-      (q) => q.id.toString() === draggedQuestionId
+      (q) => q.id.toString() === draggedQuestionId,
     );
     const questionToMove = categoryOrigin.questions[questionIndex];
 
@@ -329,7 +330,7 @@ export default function (props) {
     } else {
       // Moving to different category - add to end
       const toCategoryIndex = updatedQuestions.findIndex(
-        (q) => q.id === toCategoryId
+        (q) => q.id === toCategoryId,
       );
       updatedQuestions[toCategoryIndex].questions.push(questionToMove);
 
@@ -374,8 +375,8 @@ export default function (props) {
           className="btn btn-default"
           style={{ padding: "5px 20px" }}
           onClick={() => {
-            generateAllQuestions();                                
-          }}  
+            generateAllQuestions();
+          }}
         >
           <i className="la la-cubes text-info"></i> Generate All Questions
         </button>
@@ -425,14 +426,14 @@ export default function (props) {
 
                 const draggedQuestionId = e.dataTransfer.getData("questionId");
                 const fromCategoryId = Number(
-                  e.dataTransfer.getData("fromCategoryId")
+                  e.dataTransfer.getData("fromCategoryId"),
                 );
                 if (draggedQuestionId && !isNaN(fromCategoryId)) {
                   // This is a question being dragged
                   handleReorderQuestions(
                     draggedQuestionId,
                     fromCategoryId,
-                    group.id
+                    group.id,
                   );
                 }
               }}
@@ -466,11 +467,11 @@ export default function (props) {
                     onDragStart={(e) => {
                       e.dataTransfer.setData(
                         "questionId",
-                        question.id.toString()
+                        question.id.toString(),
                       );
                       e.dataTransfer.setData(
                         "fromCategoryId",
-                        group.id.toString()
+                        group.id.toString(),
                       );
                     }}
                     onDragOver={(e) => {
@@ -504,7 +505,7 @@ export default function (props) {
                       const draggedQuestionId =
                         e.dataTransfer.getData("questionId");
                       const fromCategoryId = Number(
-                        e.dataTransfer.getData("fromCategoryId")
+                        e.dataTransfer.getData("fromCategoryId"),
                       );
 
                       if (draggedQuestionId && !isNaN(fromCategoryId)) {
@@ -518,7 +519,7 @@ export default function (props) {
                           draggedQuestionId,
                           fromCategoryId,
                           group.id,
-                          insertIndex
+                          insertIndex,
                         );
                       }
                     }}
@@ -544,7 +545,7 @@ export default function (props) {
                         className="btn btn-default"
                         onClick={() => {
                           const categoryIndex = questions.findIndex(
-                            (q) => q.category === group.category
+                            (q) => q.category === group.category,
                           );
                           const updatedQuestions = [...questions];
 
@@ -553,7 +554,7 @@ export default function (props) {
                               updatedQuestions[categoryIndex];
                             categoryToUpdate.questions =
                               categoryToUpdate.questions.filter(
-                                (q) => q.id !== question.id
+                                (q) => q.id !== question.id,
                               );
                             if (
                               categoryToUpdate.questionCountToAsk !== null &&

@@ -100,11 +100,11 @@ export async function POST(request: Request) {
       // Legacy questions field for backward compatibility
       questions: aiInterviewQuestions
         ? [
-            ...aiInterviewQuestions.cvValidation.questions,
-            ...aiInterviewQuestions.technical.questions,
-            ...aiInterviewQuestions.behavioral.questions,
-            ...aiInterviewQuestions.analytical.questions,
-            ...aiInterviewQuestions.others.questions,
+            ...aiInterviewQuestions.cvValidation.questions.map((q: any) => q.text || q),
+            ...aiInterviewQuestions.technical.questions.map((q: any) => q.text || q),
+            ...aiInterviewQuestions.behavioral.questions.map((q: any) => q.text || q),
+            ...aiInterviewQuestions.analytical.questions.map((q: any) => q.text || q),
+            ...aiInterviewQuestions.others.questions.map((q: any) => q.text || q),
           ]
         : [],
       pipelineStages: pipelineStages || [],

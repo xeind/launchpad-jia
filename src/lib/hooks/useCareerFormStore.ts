@@ -19,8 +19,13 @@ interface PreScreeningQuestion {
   maxValue?: number; // For range type
 }
 
+interface AIQuestion {
+  id: string;
+  text: string;
+}
+
 interface AIQuestionCategory {
-  questions: string[];
+  questions: AIQuestion[];
   questionsToAsk: number;
 }
 
@@ -163,8 +168,11 @@ interface CareerFormState {
 
   // AI Interview question actions
   generateAIQuestions: (category: keyof CareerFormState["aiInterviewQuestions"]) => Promise<void>;
-  addAIQuestion: (category: keyof CareerFormState["aiInterviewQuestions"], question: string) => void;
-  removeAIQuestion: (category: keyof CareerFormState["aiInterviewQuestions"], index: number) => void;
+  generateAllAIQuestions: () => Promise<void>;
+  addAIQuestion: (category: keyof CareerFormState["aiInterviewQuestions"], questionText: string) => void;
+  updateAIQuestion: (category: keyof CareerFormState["aiInterviewQuestions"], questionId: string, questionText: string) => void;
+  removeAIQuestion: (category: keyof CareerFormState["aiInterviewQuestions"], questionId: string) => void;
+  reorderAIQuestions: (category: keyof CareerFormState["aiInterviewQuestions"], questions: AIQuestion[]) => void;
   updateQuestionsToAsk: (category: keyof CareerFormState["aiInterviewQuestions"], count: number) => void;
 
   // Pipeline stage actions
@@ -220,6 +228,60 @@ const DEFAULT_PIPELINE_STAGES: PipelineStage[] = [
     ],
   },
 ];
+
+// Helper function to migrate old string[] questions to AIQuestion[] format
+const migrateAIQuestions = (questions: any): {
+  cvValidation: AIQuestionCategory;
+  technical: AIQuestionCategory;
+  behavioral: AIQuestionCategory;
+  analytical: AIQuestionCategory;
+  others: AIQuestionCategory;
+} => {
+  if (!questions) {
+    return {
+      cvValidation: { questions: [], questionsToAsk: 0 },
+      technical: { questions: [], questionsToAsk: 0 },
+      behavioral: { questions: [], questionsToAsk: 0 },
+      analytical: { questions: [], questionsToAsk: 0 },
+      others: { questions: [], questionsToAsk: 0 },
+    };
+  }
+
+  const migrateCategory = (category: any): AIQuestionCategory => {
+    if (!category || !category.questions) {
+      return { questions: [], questionsToAsk: 0 };
+    }
+
+    // Check if questions are already in the new format (have 'id' property)
+    const hasNewFormat = category.questions.length > 0 && 
+                         typeof category.questions[0] === 'object' && 
+                         'id' in category.questions[0];
+
+    if (hasNewFormat) {
+      return category;
+    }
+
+    // Migrate old string[] format to AIQuestion[] format
+    const migratedQuestions: AIQuestion[] = category.questions.map((q: any) => ({
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      text: typeof q === 'string' ? q : q.text || '',
+    }));
+
+    return {
+      questions: migratedQuestions,
+      questionsToAsk: category.questionsToAsk || 0,
+    };
+  };
+
+  return {
+    cvValidation: migrateCategory(questions.cvValidation),
+    technical: migrateCategory(questions.technical),
+    behavioral: migrateCategory(questions.behavioral),
+    analytical: migrateCategory(questions.analytical),
+    others: migrateCategory(questions.others),
+  };
+};
+
 
 const initialState = {
   currentStep: "career-details" as Step,
@@ -631,7 +693,7 @@ export const useCareerFormStore = create<CareerFormState>()(
             cvSecretPrompt: career.cvSecretPrompt || "",
             preScreeningQuestions: career.preScreeningQuestions || [],
             aiInterviewSecretPrompt: career.aiInterviewSecretPrompt || "",
-            aiInterviewQuestions: career.aiInterviewQuestions || initialState.aiInterviewQuestions,
+            aiInterviewQuestions: migrateAIQuestions(career.aiInterviewQuestions),
             pipelineStages: career.pipelineStages || DEFAULT_PIPELINE_STAGES,
             isDraft: career.isDraft ?? false,
             currentStep: career.currentStep || "career-details",
@@ -679,7 +741,7 @@ export const useCareerFormStore = create<CareerFormState>()(
               preScreeningQuestions: careerData.preScreeningQuestions || [],
               aiInterviewScreeningSetting: careerData.aiInterviewScreeningSetting || "Good Fit and above",
               aiInterviewSecretPrompt: careerData.aiInterviewSecretPrompt || "",
-              aiInterviewQuestions: careerData.aiInterviewQuestions || initialState.aiInterviewQuestions,
+              aiInterviewQuestions: migrateAIQuestions(careerData.aiInterviewQuestions),
               pipelineStages: careerData.pipelineStages || DEFAULT_PIPELINE_STAGES,
               isDraft: careerData.isDraft ?? false,
               currentStep: careerData.currentStep || "career-details",
@@ -750,10 +812,17 @@ export const useCareerFormStore = create<CareerFormState>()(
             category,
             jobTitle: state.jobTitle,
             description: state.description,
+            generateAll: false, // Regular generation: 3 questions
           });
 
           if (response.status === 200) {
-            const questions = response.data.questions || [];
+            const questionStrings: string[] = response.data.questions || [];
+            // Convert string[] to AIQuestion[] with unique IDs
+            const questions: AIQuestion[] = questionStrings.map((text) => ({
+              id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              text,
+            }));
+            
             set({
               aiInterviewQuestions: {
                 ...state.aiInterviewQuestions,
@@ -775,21 +844,94 @@ export const useCareerFormStore = create<CareerFormState>()(
         }
       },
 
-      addAIQuestion: (category, question) => {
+      generateAllAIQuestions: async () => {
         const state = get();
+        const categories: (keyof CareerFormState["aiInterviewQuestions"])[] = [
+          "cvValidation",
+          "technical",
+          "behavioral",
+          "analytical",
+          "others",
+        ];
+
+        for (const category of categories) {
+          set({ isSaving: true });
+          try {
+            const response = await axios.post("/api/generate-questions", {
+              category,
+              jobTitle: state.jobTitle,
+              description: state.description,
+              generateAll: true, // Generate All mode: 1 question per category
+            });
+
+            if (response.status === 200) {
+              const questionStrings: string[] = response.data.questions || [];
+              // Convert string[] to AIQuestion[] with unique IDs
+              const questions: AIQuestion[] = questionStrings.map((text) => ({
+                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                text,
+              }));
+              
+              const currentState = get();
+              set({
+                aiInterviewQuestions: {
+                  ...currentState.aiInterviewQuestions,
+                  [category]: {
+                    ...currentState.aiInterviewQuestions[category],
+                    questions: [
+                      ...currentState.aiInterviewQuestions[category].questions,
+                      ...questions,
+                    ],
+                  },
+                },
+                isDirty: true,
+              });
+            }
+          } catch (error) {
+            console.error(`Failed to generate questions for ${category}:`, error);
+          }
+        }
+        set({ isSaving: false });
+      },
+
+      addAIQuestion: (category, questionText) => {
+        const state = get();
+        const newQuestion: AIQuestion = {
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          text: questionText,
+        };
+        
         set({
           aiInterviewQuestions: {
             ...state.aiInterviewQuestions,
             [category]: {
               ...state.aiInterviewQuestions[category],
-              questions: [...state.aiInterviewQuestions[category].questions, question],
+              questions: [...state.aiInterviewQuestions[category].questions, newQuestion],
             },
           },
           isDirty: true,
         });
       },
 
-      removeAIQuestion: (category, index) => {
+      updateAIQuestion: (category, questionId, questionText) => {
+        const state = get();
+        const updatedQuestions = state.aiInterviewQuestions[category].questions.map((q) =>
+          q.id === questionId ? { ...q, text: questionText } : q
+        );
+        
+        set({
+          aiInterviewQuestions: {
+            ...state.aiInterviewQuestions,
+            [category]: {
+              ...state.aiInterviewQuestions[category],
+              questions: updatedQuestions,
+            },
+          },
+          isDirty: true,
+        });
+      },
+
+      removeAIQuestion: (category, questionId) => {
         const state = get();
         set({
           aiInterviewQuestions: {
@@ -797,8 +939,22 @@ export const useCareerFormStore = create<CareerFormState>()(
             [category]: {
               ...state.aiInterviewQuestions[category],
               questions: state.aiInterviewQuestions[category].questions.filter(
-                (_, i) => i !== index
+                (q) => q.id !== questionId
               ),
+            },
+          },
+          isDirty: true,
+        });
+      },
+
+      reorderAIQuestions: (category, questions) => {
+        const state = get();
+        set({
+          aiInterviewQuestions: {
+            ...state.aiInterviewQuestions,
+            [category]: {
+              ...state.aiInterviewQuestions[category],
+              questions,
             },
           },
           isDirty: true,

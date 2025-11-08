@@ -339,8 +339,8 @@ export default function Step5Review() {
                     </span>
                   </div>
                   <ul className="list-disc list-inside space-y-1 text-gray-700">
-                    {aiInterviewQuestions.cvValidation.questions.map((q, idx) => (
-                      <li key={idx}>{q}</li>
+                    {aiInterviewQuestions.cvValidation.questions.map((q) => (
+                      <li key={q.id}>{q.text}</li>
                     ))}
                   </ul>
                 </div>
@@ -359,8 +359,8 @@ export default function Step5Review() {
                     </span>
                   </div>
                   <ul className="list-disc list-inside space-y-1 text-gray-700">
-                    {aiInterviewQuestions.technical.questions.map((q, idx) => (
-                      <li key={idx}>{q}</li>
+                    {aiInterviewQuestions.technical.questions.map((q) => (
+                      <li key={q.id}>{q.text}</li>
                     ))}
                   </ul>
                 </div>
@@ -379,8 +379,8 @@ export default function Step5Review() {
                     </span>
                   </div>
                   <ul className="list-disc list-inside space-y-1 text-gray-700">
-                    {aiInterviewQuestions.behavioral.questions.map((q, idx) => (
-                      <li key={idx}>{q}</li>
+                    {aiInterviewQuestions.behavioral.questions.map((q) => (
+                      <li key={q.id}>{q.text}</li>
                     ))}
                   </ul>
                 </div>
@@ -399,8 +399,8 @@ export default function Step5Review() {
                     </span>
                   </div>
                   <ul className="list-disc list-inside space-y-1 text-gray-700">
-                    {aiInterviewQuestions.analytical.questions.map((q, idx) => (
-                      <li key={idx}>{q}</li>
+                    {aiInterviewQuestions.analytical.questions.map((q) => (
+                      <li key={q.id}>{q.text}</li>
                     ))}
                   </ul>
                 </div>
@@ -419,8 +419,8 @@ export default function Step5Review() {
                     </span>
                   </div>
                   <ul className="list-disc list-inside space-y-1 text-gray-700">
-                    {aiInterviewQuestions.others.questions.map((q, idx) => (
-                      <li key={idx}>{q}</li>
+                    {aiInterviewQuestions.others.questions.map((q) => (
+                      <li key={q.id}>{q.text}</li>
                     ))}
                   </ul>
                 </div>

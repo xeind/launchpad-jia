@@ -100,7 +100,7 @@ export default function CareerForm({
     // Check for both undefined/null AND empty strings
     const hasValidOrgID = orgID && orgID.trim().length > 0;
     const hasValidUser = user?.email && user.email.trim().length > 0;
-    
+
     if (!hasValidOrgID || !hasValidUser) {
       console.log("⏳ CareerForm waiting for dependencies to load...", {
         hasOrgID: !!orgID,
@@ -115,8 +115,13 @@ export default function CareerForm({
     }
 
     const init = async () => {
-      console.log("✅ Initializing CareerForm with orgID:", orgID, "user:", user?.email);
-      
+      console.log(
+        "✅ Initializing CareerForm with orgID:",
+        orgID,
+        "user:",
+        user?.email,
+      );
+
       await initializeForm(
         formType,
         orgID,
@@ -151,7 +156,7 @@ export default function CareerForm({
       </div>
 
       {/* Separator */}
-      <hr className=" border-t border-gray-300 mt-4 mb-4" />
+      <hr className=" border-t border-gray-300 mt-2 mb-2" />
 
       {/* Step Routing */}
       {currentStep === "career-details" && <Step1CareerDetails />}

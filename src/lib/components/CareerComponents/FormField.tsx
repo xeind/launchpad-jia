@@ -17,6 +17,7 @@ export default function FormField({ children, flex = 1 }: FormFieldProps) {
         display: "flex",
         flexDirection: "column",
         gap: 8,
+        marginBottom: 8,
       }}
     >
       {children}

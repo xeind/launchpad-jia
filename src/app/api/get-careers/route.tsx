@@ -67,6 +67,7 @@ export async function GET(req: Request) {
                     jobTitle: { $first: "$jobTitle" },
                     status: { $first: "$status" },
                     createdAt: { $first: "$createdAt" },
+                    updatedAt: { $first: "$updatedAt" },
                     lastActivityAt: { $first: "$lastActivityAt" },
                     orgID: { $first: "$orgID" },
                     interviewsInProgress: {

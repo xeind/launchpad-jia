@@ -40,7 +40,7 @@ const SUGGESTED_QUESTIONS = [
   {
     id: "work-setup",
     header: "Work Setup",
-    question: "Are you willing to report to the office when required?",
+    question: "How often are you willing to report to the office each week?",
     type: "dropdown" as const,
     options: ["Fully Remote", "1-2 days", "3-4 days", "5 days (Onsite)"],
   },
@@ -128,7 +128,7 @@ export default function Step2CVReview() {
         <div className="w-4/5 flex flex-col gap-2">
           <CareerFormCard heading="1. CV Review Settings" icon="">
             <FormSectionHeader marginTop={8}>CV Screening</FormSectionHeader>
-            <p className="text-sm text-gray-500 mb-3">
+            <p className="text-md font-normal text-gray-600 mb-3">
               Jia automatically endorses candidates who meet the chosen criteria
             </p>
             <FormField>
@@ -143,10 +143,10 @@ export default function Step2CVReview() {
               />
             </FormField>
 
-            <hr className="border-t border-gray-300 mt-4 mb-4" />
+            <hr className="border-t border-gray-300 mt-2 mb-2" />
 
             <FormSectionHeader>CV Secret Prompt</FormSectionHeader>
-            <p className="text-sm text-gray-700 mb-3">
+            <p className="text-md font-normal text-gray-600 mb-3">
               Secret Prompts give you extra control over Jia&apos;s evaluation
               style, complementing her accurate assessment of requirements from
               the job description.
@@ -164,9 +164,9 @@ export default function Step2CVReview() {
           </CareerFormCard>
 
           <CareerFormCard heading="2. Pre-Screening Questions" icon="">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-2">
               <div>
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-md text-gray-600">
                   Required - Add at least 1 question
                 </span>
                 {errors.preScreeningQuestions && (
@@ -176,18 +176,18 @@ export default function Step2CVReview() {
                 )}
               </div>
               <button
-                className="bg-blue-500 text-white border-none px-4 py-2 rounded-lg cursor-pointer text-sm font-medium flex items-center gap-2 hover:bg-blue-600 transition-colors"
+                className="bg-black text-white px-4 py-2 rounded-full cursor-pointer text-sm font-medium flex items-center gap-2 hover:bg-gray-800 transition-colors"
                 onClick={handleAddQuestion}
               >
                 <i className="la la-plus text-base"></i>
-                Add Question
+                Add custom
               </button>
             </div>
 
-            <FormSectionHeader>Questions Preview</FormSectionHeader>
+            {/* <FormSectionHeader>Questions Preview</FormSectionHeader> */}
 
             {preScreeningQuestions.length === 0 ? (
-              <div className="p-6 text-center text-gray-400 text-sm bg-gray-50 rounded-lg mb-4">
+              <div className="p-2  text-gray-400 text-md mb-4 ">
                 No pre-screening questions added yet. Add at least one question
                 to continue.
               </div>
@@ -233,7 +233,7 @@ export default function Step2CVReview() {
               </DndContext>
             )}
 
-            <hr className="border-t border-gray-300 my-4" />
+            <hr className="border-t border-gray-300 my-2" />
 
             <FormSectionHeader>
               Suggested Pre-screening Questions
@@ -248,13 +248,15 @@ export default function Step2CVReview() {
                   >
                     <div className="flex justify-between items-center">
                       <div className="flex flex-col gap-1">
-                        <span className="text-sm font-semibold text-gray-800">
+                        <span className={`text-sm font-semibold ${isAdded ? 'text-gray-400' : 'text-gray-800'}`}>
                           {sq.header}
                         </span>
-                        <span className="text-sm text-gray-700">{sq.question}</span>
+                        <span className={`text-sm ${isAdded ? 'text-gray-400' : 'text-gray-700'}`}>
+                          {sq.question}
+                        </span>
                       </div>
                       <button
-                        className={`px-3 py-1.5 rounded-md text-xs font-medium border flex-shrink-0 ${
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border flex-shrink-0 ${
                           isAdded
                             ? "bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed"
                             : "bg-white text-blue-500 border-blue-500 cursor-pointer hover:bg-blue-50"
