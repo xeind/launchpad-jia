@@ -37,10 +37,7 @@ export async function POST() {
         },
         {
           $match: {
-            $and: [
-              { status: "active" },
-              { "organization.tier": { $in: ["corporate", "enterprise"] } },
-            ],
+            status: "active",
           },
         },
         {
@@ -55,7 +52,7 @@ export async function POST() {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch careers" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

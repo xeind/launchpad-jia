@@ -69,11 +69,21 @@ export default function QuestionCard({
   isNew = false,
   isQuestionLocked = false,
 }: QuestionCardProps) {
-  const [localOptions, setLocalOptions] = useState<string[]>(
-    options.length > 0 ? options : [""],
-  );
+  const [localOptions, setLocalOptions] = useState<string[]>(() => {
+    // If options are provided and have values, use them
+    if (options.length >= 2) {
+      return options;
+    }
+    // If options are provided but incomplete, keep existing values and add defaults
+    if (options.length === 1) {
+      return options[0] ? [...options, "2"] : ["1", "2"];
+    }
+    // Default: Auto-populate with numbers 1, 2, 3 for new questions
+    return ["1", "2", "3"];
+  });
   const [localMinValue, setLocalMinValue] = useState(minValue.toString());
   const [localMaxValue, setLocalMaxValue] = useState(maxValue.toString());
+  const [rangeError, setRangeError] = useState<string>("");
 
   const {
     attributes,
@@ -91,8 +101,10 @@ export default function QuestionCard({
   };
 
   const addOption = () => {
-    const newOptions = [...localOptions, ""];
+    const nextNumber = (localOptions.length + 1).toString();
+    const newOptions = [...localOptions, nextNumber];
     setLocalOptions(newOptions);
+    onUpdateAction({ options: newOptions });
   };
 
   const updateOption = (index: number, value: string) => {
@@ -104,7 +116,7 @@ export default function QuestionCard({
 
   const removeOption = (index: number) => {
     const newOptions = localOptions.filter((_, i) => i !== index);
-    const finalOptions = newOptions.length > 0 ? newOptions : [""];
+    const finalOptions = newOptions.length >= 2 ? newOptions : ["", ""];
     setLocalOptions(finalOptions);
     onUpdateAction({ options: finalOptions });
   };
@@ -118,6 +130,12 @@ export default function QuestionCard({
     setLocalMinValue(value);
     const numValue = parseInt(value);
     if (!isNaN(numValue)) {
+      const maxNum = parseInt(localMaxValue);
+      if (!isNaN(maxNum) && numValue >= maxNum) {
+        setRangeError("Minimum value must be less than maximum value");
+      } else {
+        setRangeError("");
+      }
       onUpdateAction({ minValue: numValue });
     }
   };
@@ -126,6 +144,12 @@ export default function QuestionCard({
     setLocalMaxValue(value);
     const numValue = parseInt(value);
     if (!isNaN(numValue)) {
+      const minNum = parseInt(localMinValue);
+      if (!isNaN(minNum) && numValue <= minNum) {
+        setRangeError("Maximum value must be greater than minimum value");
+      } else {
+        setRangeError("");
+      }
       onUpdateAction({ maxValue: numValue });
     }
   };
@@ -134,14 +158,14 @@ export default function QuestionCard({
     <div
       ref={setNodeRef}
       style={style}
-      className={`border rounded-lg bg-white shadow-sm ${isNew ? "border-blue-500 border-2" : "border-gray-200"}`}
+      className={`rounded-lg border bg-white shadow-sm ${isNew ? "border-2 border-blue-500" : "border-gray-200"}`}
     >
       <div className="flex items-stretch">
         {/* Drag Handle */}
         <div
           {...attributes}
           {...listeners}
-          className="flex items-center justify-center w-10 bg-gray-50 border-r border-gray-200 cursor-grab active:cursor-grabbing rounded-l-lg hover:bg-gray-100 transition-colors"
+          className="flex w-10 cursor-grab items-center justify-center rounded-l-lg border-r border-gray-200 bg-gray-50 transition-colors hover:bg-gray-100 active:cursor-grabbing"
         >
           <svg
             width="16"
@@ -163,13 +187,13 @@ export default function QuestionCard({
         {/* Card Content */}
         <div className="flex-1">
           {/* Gray Header Section - Question + Type Row */}
-          <div className="bg-gray-50 p-2 border-b border-gray-200">
+          <div className="border-b border-gray-200 bg-gray-50 p-2">
             <div style={{ display: "flex", flexDirection: "row", gap: 12 }}>
               {/* Question Field - 70% width */}
               <div style={{ flex: "0 0 70%" }}>
                 <input
                   value={question}
-                  className={`form-control ${isQuestionLocked ? "!bg-gray-50 !border-0 cursor-not-allowed" : ""}`}
+                  className={`form-control ${isQuestionLocked ? "cursor-not-allowed !border-0 !bg-gray-50" : ""}`}
                   placeholder="Enter your question"
                   onChange={(e) => onUpdateAction({ question: e.target.value })}
                   disabled={isQuestionLocked}
@@ -195,26 +219,26 @@ export default function QuestionCard({
               <div style={{ marginBottom: 16 }}>
                 <div className="space-y-3">
                   {localOptions.map((opt, idx) => (
-                    <div key={idx} className="flex gap-2 items-stretch">
+                    <div key={idx} className="flex items-stretch gap-2">
                       {/* Unified Input with Numbered Box */}
-                      <div className="flex items-stretch flex-1 border border-gray-300 rounded overflow-hidden">
+                      <div className="flex flex-1 items-stretch overflow-hidden rounded border border-gray-300">
                         {/* Numbered Box - Inside Input - Full Height */}
-                        <div className="flex items-center justify-center w-10 bg-gray-100 border-r border-gray-300 text-xs font-medium text-gray-600 flex-shrink-0">
+                        <div className="flex w-10 flex-shrink-0 items-center justify-center border-r border-gray-300 bg-gray-100 text-xs font-medium text-gray-600">
                           {idx + 1}
                         </div>
                         {/* Option Input */}
                         <input
                           value={opt}
-                          className="flex-1 px-3 py-2 border-0 focus:outline-none focus:ring-0"
+                          className="flex-1 border-0 px-3 py-2 focus:outline-none focus:ring-0"
                           placeholder={`Option ${idx + 1}`}
                           onChange={(e) => updateOption(idx, e.target.value)}
                           style={{ boxShadow: "none" }}
                         />
                       </div>
                       {/* Delete Button - Rightmost */}
-                      {localOptions.length > 1 && (
+                      {localOptions.length > 2 && (
                         <button
-                          className="bg-transparent border-none text-red-500 cursor-pointer p-1 hover:text-red-700 transition-colors flex-shrink-0"
+                          className="flex-shrink-0 cursor-pointer border-none bg-transparent p-1 text-red-500 transition-colors hover:text-red-700"
                           onClick={() => removeOption(idx)}
                         >
                           <i className="la la-times text-xl"></i>
@@ -222,11 +246,12 @@ export default function QuestionCard({
                       )}
                     </div>
                   ))}
+
                   <button
-                    className="bg-transparent text-gray-500 px-3 py-2 rounded-md cursor-pointer text-md font-medium hover:bg-blue-50 transition-colors"
+                    className="text-md flex cursor-pointer items-center rounded-md bg-transparent px-3 py-2 font-medium text-gray-500 transition-colors hover:bg-blue-50"
                     onClick={addOption}
                   >
-                    <i className="la la-plus text-sm mr-1"></i>
+                    <i className="la la-plus mr-1 text-sm"></i>
                     Add Option
                   </button>
                 </div>
@@ -258,20 +283,25 @@ export default function QuestionCard({
                     />
                   </FormField>
                 </FormRow>
+                {rangeError && (
+                  <div style={{ color: "#ef4444", fontSize: 12, marginTop: 4 }}>
+                    {rangeError}
+                  </div>
+                )}
               </div>
             )}
 
             {/* Divider */}
-            <hr className="border-t border-gray-300 my-4" />
+            <hr className="my-4 border-t border-gray-300" />
 
             {/* Delete Button */}
             <div className="flex justify-end">
               <button
-                className="bg-transparent rounded-full text-red-500 p-2 cursor-pointer text-sm font-medium hover:bg-red-50 transition-colors w-auto"
+                className="w-auto cursor-pointer rounded-full bg-transparent p-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-50"
                 style={{ border: "1px solid #ef4444" }}
                 onClick={onDeleteAction}
               >
-                <i className="la la-trash text-base mr-2"></i>
+                <i className="la la-trash mr-2 text-base"></i>
                 Delete Question
               </button>
             </div>

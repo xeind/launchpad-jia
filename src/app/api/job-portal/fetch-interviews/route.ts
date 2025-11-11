@@ -4,11 +4,34 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   const { db } = await connectMongoDB();
   const { email, interviewID } = await request.json();
+  console.log("🔍 [API job-portal/fetch-interviews] Request params:", {
+    email,
+    interviewID,
+  });
   const interviewModel = db.collection("interviews");
+
+  // First, let's see what we have without status filter
+  if (interviewID != "all") {
+    const debugInterview = await interviewModel.findOne({
+      email,
+      interviewID,
+    });
+    console.log(
+      "🔍 [DEBUG] Interview found (no status filter):",
+      debugInterview
+        ? {
+            interviewID: debugInterview.interviewID,
+            applicationStatus: debugInterview.applicationStatus,
+            cvStatus: debugInterview.cvStatus,
+          }
+        : "NOT FOUND",
+    );
+  }
+
   const matchConditions: any = [{ email }];
 
   if (interviewID != "all") {
-    matchConditions.push({ id: interviewID });
+    matchConditions.push({ interviewID: interviewID });
   }
 
   matchConditions.push({
@@ -19,6 +42,37 @@ export async function POST(request: Request) {
 
   const interviews = await interviewModel
     .aggregate([
+      { $match: { $and: matchConditions } },
+      {
+        $addFields: {
+          debugCareerID: "$careerID",
+          debugID: "$id",
+        },
+      },
+      {
+        $lookup: {
+          from: "careers",
+          let: {
+            careerId: { $ifNull: ["$careerID", "$id"] }, // Use careerID if exists, otherwise use id
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$id", "$$careerId"],
+                },
+              },
+            },
+          ],
+          as: "career",
+        },
+      },
+      {
+        $unwind: {
+          path: "$career",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $lookup: {
           from: "organizations",
@@ -54,6 +108,41 @@ export async function POST(request: Request) {
       },
     ])
     .toArray();
+
+  console.log(
+    "🔍 [API job-portal/fetch-interviews] Match conditions:",
+    matchConditions,
+  );
+  console.log(
+    "🔍 [API job-portal/fetch-interviews] Found interviews:",
+    interviews.length,
+  );
+  if (interviews.length > 0) {
+    console.log(
+      "🔍 [API job-portal/fetch-interviews] First interview FULL:",
+      JSON.stringify(interviews[0], null, 2),
+    );
+    console.log(
+      "🔍 [API job-portal/fetch-interviews] First interview careerID:",
+      interviews[0].careerID,
+    );
+    console.log(
+      "🔍 [API job-portal/fetch-interviews] First interview id field:",
+      interviews[0].id,
+    );
+    console.log(
+      "🔍 [API job-portal/fetch-interviews] First interview debugCareerID:",
+      interviews[0].debugCareerID,
+    );
+    console.log(
+      "🔍 [API job-portal/fetch-interviews] First interview career array:",
+      interviews[0].career,
+    );
+    console.log(
+      "🔍 [API job-portal/fetch-interviews] Pre-screening questions:",
+      interviews[0].career?.preScreeningQuestions,
+    );
+  }
 
   if (interviewID != "all" && interviews.length == 0) {
     return NextResponse.json({

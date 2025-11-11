@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useCareerFormStore } from "@/lib/hooks/useCareerFormStore";
 import { useAppContext } from "@/lib/context/AppContext";
 import { successToast, errorToast } from "@/lib/Utils";
@@ -86,12 +86,13 @@ export default function CareerForm({
   };
 
   // Track initialization state to prevent re-initialization
-  const [isInitialized, setIsInitialized] = useState(false);
+  // Using useRef instead of useState to avoid triggering re-renders
+  const isInitializedRef = useRef(false);
 
   // Initialize form on mount - WAIT for orgID and user to be loaded from AppContext
   useEffect(() => {
     // Prevent re-initialization if already initialized
-    if (isInitialized) {
+    if (isInitializedRef.current) {
       return;
     }
 
@@ -135,12 +136,12 @@ export default function CareerForm({
       );
 
       // Mark as initialized to prevent re-running
-      setIsInitialized(true);
+      isInitializedRef.current = true;
       console.log("✅ CareerForm initialization complete");
     };
 
     init();
-  }, [orgID, user?.email, isInitialized]); // Re-run when orgID or user.email become available
+  }, [orgID, user?.email]); // Re-run when orgID or user.email become available
 
   return (
     <div className="col" style={{ padding: "0 20px" }}>
@@ -156,7 +157,7 @@ export default function CareerForm({
       </div>
 
       {/* Separator */}
-      <hr className=" border-t border-gray-300 mt-2 mb-2" />
+      <hr className="mb-2 mt-2 border-t border-gray-300" />
 
       {/* Step Routing */}
       {currentStep === "career-details" && <Step1CareerDetails />}

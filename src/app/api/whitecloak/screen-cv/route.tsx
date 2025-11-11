@@ -5,7 +5,7 @@ import connectMongoDB from "@/lib/mongoDB/mongoDB";
 import OpenAI from "openai";
 
 export async function POST(request: Request) {
-  const { interviewID, userEmail } = await request.json();
+  const { interviewID, userEmail, preScreeningAnswers } = await request.json();
   const { db } = await connectMongoDB();
   const interviewData = await db.collection("interviews").findOne({
     interviewID,
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       projection: {
         cv_screening_prompt: 1,
       },
-    }
+    },
   );
   const cvScreeningPromptText =
     cvScreeningPromptData?.cv_screening_prompt?.prompt;
@@ -124,6 +124,12 @@ export async function POST(request: Request) {
     jobFitScore: result.jobFitScore,
     updatedAt: Date.now(),
   };
+
+  // Add pre-screening answers if provided
+  if (preScreeningAnswers) {
+    screeningData.preScreeningAnswers = preScreeningAnswers;
+  }
+
   const newDate = new Date();
 
   screeningData.statusDate = {
@@ -261,7 +267,7 @@ export async function POST(request: Request) {
     .collection("careers")
     .updateOne(
       { id: interviewData.id },
-      { $set: { lastActivityAt: new Date() } }
+      { $set: { lastActivityAt: new Date() } },
     );
 
   return NextResponse.json(screeningData);

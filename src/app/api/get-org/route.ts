@@ -21,11 +21,11 @@ export async function POST(req: Request) {
             },
             {
               $match: {
-                $expr: { 
+                $expr: {
                   $and: [
                     { $eq: ["$_idStr", "$$orgIdStr"] },
-                    { $eq: ["$status", "active"] }
-                  ]
+                    { $eq: ["$status", "active"] },
+                  ],
                 },
               },
             },
@@ -33,7 +33,12 @@ export async function POST(req: Request) {
           as: "organizationDetails",
         },
       },
-      { $unwind: "$organizationDetails" },
+      {
+        $unwind: {
+          path: "$organizationDetails",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $addFields: {
           "organizationDetails.role": "$role",
@@ -43,7 +48,9 @@ export async function POST(req: Request) {
     ])
     .toArray();
 
-  const orgList = orgs.map((org) => org.organizationDetails);
+  const orgList = orgs
+    .filter((org) => org.organizationDetails)
+    .map((org) => org.organizationDetails);
 
   await db.collection("members").updateMany(
     { email: user.email },
@@ -54,7 +61,7 @@ export async function POST(req: Request) {
         lastLogin: new Date(),
         status: "joined",
       },
-    }
+    },
   );
   return NextResponse.json(orgList);
 }
@@ -62,7 +69,10 @@ export async function POST(req: Request) {
 export async function GET() {
   const { db } = await connectMongoDB();
 
-  const orgs = await db.collection("organizations").find({ status: "active" }).toArray();
+  const orgs = await db
+    .collection("organizations")
+    .find({ status: "active" })
+    .toArray();
 
   return NextResponse.json(orgs);
 }

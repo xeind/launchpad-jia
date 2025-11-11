@@ -33,8 +33,6 @@ export default function Layout({ children }) {
   ];
   // Check active link from the url
   useEffect(() => {
-    window.location.href = "https://www.hellojia.ai"
-    
     if (pathname) {
       let pathSplit = pathname.split("/");
 
@@ -68,7 +66,8 @@ export default function Layout({ children }) {
     setSidebarOpen(false);
   }, [pathname]);
 
-  if (true) return null;
+  // Enable applicant layout
+  // if (true) return null;
 
   return (
     <>
@@ -99,7 +98,7 @@ export default function Layout({ children }) {
               <div className="header-body">
                 <div className="row align-items-center py-4">
                   <div className="col-lg-6 col-7">
-                    <h6 className="h2 text-white d-inline-block mb-0">
+                    <h6 className="h2 d-inline-block mb-0 text-white">
                       {activeLink}
                     </h6>
                     <nav
@@ -160,7 +159,7 @@ export default function Layout({ children }) {
                               style={{ maxHeight: "400px", overflowY: "auto" }}
                             >
                               <div
-                                className="notification-item p-3 border-bottom"
+                                className="notification-item border-bottom p-3"
                                 style={{
                                   minHeight: "300px",
                                   display: "flex",
@@ -168,7 +167,7 @@ export default function Layout({ children }) {
                                   alignItems: "center",
                                 }}
                               >
-                                <p className="text-sm text-muted mb-0">
+                                <p className="text-muted mb-0 text-sm">
                                   No notifications yet.
                                 </p>
                               </div>

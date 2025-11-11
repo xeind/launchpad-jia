@@ -366,6 +366,9 @@ export default function Step1CareerDetails() {
             display: "flex",
             flexDirection: "column",
             gap: 8,
+            position: "sticky",
+            top: "1rem",
+            alignSelf: "flex-start",
           }}
         >
           <CareerFormCard

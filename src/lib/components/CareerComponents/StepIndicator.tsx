@@ -11,28 +11,31 @@ const steps: Array<{ key: Step; label: string; number: number }> = [
 ];
 
 export default function StepIndicator() {
-  const { currentStep, completedSteps, visitedSteps, goToStep, setStep } = useCareerFormStore();
+  const { currentStep, completedSteps, visitedSteps, goToStep, setStep } =
+    useCareerFormStore();
 
   const handleStepClick = async (step: Step) => {
     const stepIndex = steps.findIndex((s) => s.key === step);
     const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
 
     // Allow navigation to:
-    // 1. Any visited step (steps the user has been to before)
-    // 2. Any completed step (can revisit completed steps)
-    // 3. The next step after current (forward navigation - with validation)
-    const isVisited = visitedSteps.includes(step);
+    // 1. Any completed step (can revisit without validation)
+    // 2. Current step (no-op, stays on same step)
+    // 3. Previous step (backward navigation - no validation needed)
+    // 4. Next step (forward navigation - requires validation)
     const isCompleted = completedSteps.includes(step);
-    const isNextStep = stepIndex === currentStepIndex + 1;
     const isCurrentStep = stepIndex === currentStepIndex;
-    
-    if (isVisited || isCompleted || isCurrentStep) {
-      // Navigate without validation for visited/completed/current steps
+    const isPreviousStep = stepIndex < currentStepIndex;
+    const isNextStep = stepIndex === currentStepIndex + 1;
+
+    if (isCompleted || isCurrentStep || isPreviousStep) {
+      // Navigate without validation for completed/current/previous steps
       setStep(step);
     } else if (isNextStep) {
       // Navigate with validation for next step (will add to visitedSteps if validation passes)
       await goToStep(step);
     }
+    // Ignore clicks on steps that are more than one step ahead
   };
 
   return (
@@ -46,20 +49,33 @@ export default function StepIndicator() {
         position: "relative",
       }}
     >
+      {/* SVG Gradient Definition */}
+      <svg width="0" height="0" style={{ position: "absolute" }}>
+        <defs>
+          <linearGradient id="step-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#9FCAED" />
+            <stop offset="33%" stopColor="#CEB6DA" />
+            <stop offset="66%" stopColor="#EBACC9" />
+            <stop offset="100%" stopColor="#FCCEC0" />
+          </linearGradient>
+        </defs>
+      </svg>
+
       {steps.map((step, index) => {
         const isActive = currentStep === step.key;
         const isCompleted = completedSteps.includes(step.key);
         const stepIndex = steps.findIndex((s) => s.key === step.key);
         const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
-        
+
         // Allow clicking on:
-        // 1. Visited steps (steps the user has been to)
-        // 2. Completed steps
-        // 3. Current step
-        // 4. Next step after current
-        const isVisited = visitedSteps.includes(step.key);
+        // 1. Completed steps
+        // 2. Current step
+        // 3. Previous steps (backward navigation)
+        // 4. Next step (forward navigation with validation)
+        const isPreviousStep = stepIndex < currentStepIndex;
         const isNextStep = stepIndex === currentStepIndex + 1;
-        const isClickable = isVisited || isCompleted || isActive || isNextStep;
+        const isClickable =
+          isCompleted || isActive || isPreviousStep || isNextStep;
 
         return (
           <div
@@ -82,9 +98,12 @@ export default function StepIndicator() {
                   top: 16,
                   left: "50%",
                   right: "-50%",
-                  height: 2,
-                  backgroundColor: isCompleted ? "#10B981" : "#E5E7EB",
+                  height: 4,
+                  background: isCompleted
+                    ? "linear-gradient(to right, #9FCAED, #CEB6DA, #EBACC9, #FCCEC0)"
+                    : "#E5E7EB",
                   zIndex: 0,
+                  borderRadius: 2,
                 }}
               />
             )}
@@ -98,10 +117,10 @@ export default function StepIndicator() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                backgroundColor: isActive
+                background: isActive
                   ? "#3B82F6"
                   : isCompleted
-                    ? "#10B981"
+                    ? "linear-gradient(135deg, #9FCAED 0%, #CEB6DA 33%, #EBACC9 66%, #FCCEC0 100%)"
                     : "#E5E7EB",
                 color: isActive || isCompleted ? "#FFFFFF" : "#6B7280",
                 fontWeight: 600,

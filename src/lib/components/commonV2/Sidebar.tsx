@@ -53,8 +53,8 @@ export default function ({ children }) {
     if (hasChanges == "true") {
       Promise.resolve(
         window.confirm(
-          "You have unsaved changes. Are you sure you want to leave this page?"
-        )
+          "You have unsaved changes. Are you sure you want to leave this page?",
+        ),
       ).then((confirmed) => {
         if (confirmed) {
           if (path == pathConstants.home) {
@@ -81,7 +81,7 @@ export default function ({ children }) {
           window.location.origin.includes("localhost")
             ? "/job-portal"
             : pathConstants.employee
-        }`
+        }`,
       );
     } else {
       links.forEach((link) => {

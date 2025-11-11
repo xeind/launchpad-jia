@@ -124,7 +124,37 @@ export default function () {
 
   function handleApply() {
     if (user != null) {
-      applyJob();
+      // Create interview record first, then redirect to Upload CV page
+      setModalType("loading");
+
+      axios({
+        method: "POST",
+        url: "/api/whitecloak/apply-job",
+        data: { user, selectedCareer, preScreeningAnswers: {} },
+      })
+        .then((res) => {
+          if (res.data.error) {
+            alert(res.data.message);
+            setModalType(null);
+          } else {
+            // Interview created successfully, store interviewID and redirect
+            const createdInterview = res.data.interviewData;
+            sessionStorage.setItem(
+              "selectedCareer",
+              JSON.stringify({
+                ...selectedCareer,
+                interviewID: createdInterview.interviewID,
+              }),
+            );
+            setModalType(null);
+            window.location.href = pathConstants.uploadCV;
+          }
+        })
+        .catch((err) => {
+          alert("Error applying for job");
+          setModalType(null);
+          console.log(err);
+        });
     } else {
       sessionStorage.setItem("redirectionPath", pathname);
       setModalType("signIn");
@@ -160,7 +190,7 @@ export default function () {
 
     updateQueryParams(
       updatedButtons[indexButton].name.toLowerCase().replace(" ", ""),
-      ""
+      "",
     );
 
     setButtons(updatedButtons);
@@ -273,7 +303,7 @@ export default function () {
 
     updateQueryParams(
       updatedButtons[indexButton].name.toLowerCase().replace(" ", ""),
-      updatedButtons[indexButton].value.join(",")
+      updatedButtons[indexButton].value.join(","),
     );
 
     setButtons(updatedButtons);
@@ -372,14 +402,14 @@ export default function () {
     if (filters[buttons[0].name][0] == buttons[0].list[0]) {
       filteredCareers.sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
     }
 
     if (filters[buttons[0].name][0] == buttons[0].list[1]) {
       filteredCareers.sort(
         (a, b) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
       );
     }
 
@@ -413,7 +443,7 @@ export default function () {
 
     if (filters[buttons[4].name].length > 0) {
       filteredCareers = filteredCareers.filter((career) =>
-        filters[buttons[4].name].includes(career.organization.name)
+        filters[buttons[4].name].includes(career.organization.name),
       );
     }
 
@@ -422,7 +452,7 @@ export default function () {
         return filters[buttons[5].name].some(
           (setup) =>
             career.workSetup &&
-            career.workSetup.toLowerCase().includes(setup.toLowerCase())
+            career.workSetup.toLowerCase().includes(setup.toLowerCase()),
         );
       });
     }
@@ -803,7 +833,7 @@ export default function () {
                     src={assetConstants.externalLink}
                     onClick={() =>
                       handleRedirection(
-                        `${pathConstants.jobOpenings}/${selectedCareer._id}`
+                        `${pathConstants.jobOpenings}/${selectedCareer._id}`,
                       )
                     }
                     onContextMenu={(e) => e.preventDefault()}
@@ -855,7 +885,7 @@ export default function () {
               )}
 
               {interviews.some(
-                (interview) => interview.id == selectedCareer.id
+                (interview) => interview.id == selectedCareer.id,
               ) ? (
                 <div className={styles.appliedContainer}>
                   <span className={styles.applied}>
@@ -863,8 +893,8 @@ export default function () {
                     Applied{" "}
                     {processDate(
                       interviews.find(
-                        (interview) => interview.id == selectedCareer.id
-                      ).createdAt
+                        (interview) => interview.id == selectedCareer.id,
+                      ).createdAt,
                     )}
                   </span>
 
@@ -922,7 +952,7 @@ export default function () {
                       )}
 
                       {selectedCareer.organization.name.includes(
-                        "White Cloak"
+                        "White Cloak",
                       ) && (
                         <>
                           <span

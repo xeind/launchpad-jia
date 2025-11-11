@@ -41,7 +41,7 @@ export default function Step1Dropdown(props) {
           rounded-lg
           px-4 py-2.5
           text-base
-          font-medium
+          font-normal
           capitalize
           flex items-center gap-2
           transition-colors duration-200
@@ -51,7 +51,15 @@ export default function Step1Dropdown(props) {
         type="button"
         onClick={() => !disabled && setDropdownOpen((v) => !v)}
       >
-        <span className={disabled ? "!text-gray-500" : (screeningSetting ? "text-gray-800" : "text-gray-400")}>
+        <span
+          className={
+            disabled
+              ? "!text-gray-500"
+              : screeningSetting
+                ? "text-gray-800"
+                : "text-gray-400"
+          }
+        >
           <i
             className={
               settingList.find((setting) => setting.name === screeningSetting)
@@ -60,7 +68,9 @@ export default function Step1Dropdown(props) {
           ></i>{" "}
           {screeningSetting?.replace("_", " ") || placeholder}
         </span>
-        <i className={`la la-angle-down ml-auto ${disabled ? "!text-gray-500" : ""}`}></i>
+        <i
+          className={`la la-angle-down ml-auto ${disabled ? "!text-gray-500" : ""}`}
+        ></i>
       </button>
       <div
         className={`
@@ -96,7 +106,7 @@ export default function Step1Dropdown(props) {
                 overflow-hidden
                 py-2.5 px-3
                 text-black
-                font-medium
+                ${setting.name === screeningSetting ? "!font-bold" : "!font-normal"}
                 bg-transparent
                 !flex !flex-row !justify-between !items-center
                 capitalize
@@ -117,7 +127,7 @@ export default function Step1Dropdown(props) {
                 </span>
               </div>
               {setting.name === screeningSetting && (
-                <i className="la la-check text-lg text-blue-500 font-bold flex-shrink-0 ml-2"></i>
+                <i className="la la-check text-lg text-blue-500 font-medium flex-shrink-0 ml-2"></i>
               )}
             </button>
           </div>

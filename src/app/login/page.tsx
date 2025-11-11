@@ -9,9 +9,7 @@ export default function () {
         window.location.href = "/recruiter-dashboard";
       } else {
         // Applicant dashboard
-        window.location.href = window.location.origin.includes("localhost")
-          ? "/job-portal"
-          : "https://www.hellojia.ai";
+        window.location.href = "/dashboard";
       }
     }
   }, []);
@@ -112,7 +110,7 @@ export default function () {
           </span> */}
           <br />
           <br />
-          <h1 className="fade-in dl-2 text-white display-2 b-text">
+          <h1 className="fade-in dl-2 display-2 b-text text-white">
             Meet Jia, <br />
             WhiteCloak's fully-automated <br />
             Job Interviewer.

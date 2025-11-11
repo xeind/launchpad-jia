@@ -9,12 +9,19 @@ export async function POST(request: Request) {
     if (!name || !email) {
       return NextResponse.json(
         { error: "Name and email are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const { db } = await connectMongoDB();
     const admin = await db.collection("admins").findOne({ email: email });
+
+    if (admin) {
+      console.log(
+        "🔍 AUTH DEBUG - Admin data:",
+        JSON.stringify(admin, null, 2),
+      );
+    }
 
     if (admin) {
       await db.collection("admins").updateOne(
@@ -25,12 +32,12 @@ export async function POST(request: Request) {
             image: image,
             lastSeen: new Date(),
           },
-        }
+        },
       );
 
-      return NextResponse.json(admin);
+      return NextResponse.json({ ...admin, role: "admin" });
     } else {
-      const applicant = await db
+      let applicant = await db
         .collection("applicants")
         .findOne({ email: email });
 
@@ -38,37 +45,37 @@ export async function POST(request: Request) {
         return NextResponse.json(applicant);
       }
 
-      if (!applicant) {
-        await db.collection("applicants").insertOne({
-          email: email,
-          name: name,
-          image: image,
-          createdAt: new Date(),
-          lastSeen: new Date(),
-          role: "applicant",
-        });
-      }
-    }
+      // Create new applicant if doesn't exist
+      const newApplicant = {
+        email: email,
+        name: name,
+        image: image,
+        createdAt: new Date(),
+        lastSeen: new Date(),
+        role: "applicant",
+      };
 
-    return NextResponse.json({
-      message: "Default Fallback",
-    });
+      await db.collection("applicants").insertOne(newApplicant);
+
+      return NextResponse.json(newApplicant);
+    }
   } catch (error) {
     console.error("Authentication error:", error);
-    
+
     // Check if it's a MongoDB connection error
-    const isMongoError = error.name === 'MongoServerSelectionError' || 
-                         error.name === 'MongoNetworkError';
-    
+    const isMongoError =
+      error.name === "MongoServerSelectionError" ||
+      error.name === "MongoNetworkError";
+
     return NextResponse.json(
-      { 
+      {
         error: "Failed to authenticate user",
-        message: isMongoError 
+        message: isMongoError
           ? "Database connection error. Please check your network connection or contact support."
           : error.message || "An unexpected error occurred",
-        type: isMongoError ? "DATABASE_ERROR" : "SERVER_ERROR"
+        type: isMongoError ? "DATABASE_ERROR" : "SERVER_ERROR",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

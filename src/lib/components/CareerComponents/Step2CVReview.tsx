@@ -47,9 +47,11 @@ const SUGGESTED_QUESTIONS = [
   {
     id: "asking-salary",
     header: "Asking Salary",
-    question: "How much is your expected monthly salary?",
-    type: "short-answer" as const,
+    question: "What is your expected monthly salary range?",
+    type: "range" as const,
     options: [],
+    minValue: 0,
+    maxValue: 100000,
   },
 ];
 
@@ -94,7 +96,7 @@ export default function Step2CVReview() {
       id: `question-${Date.now()}`,
       question: "",
       type: "short-answer" as const,
-      options: [],
+      options: ["", ""], // Start with 2 empty options for dropdown/checkboxes
       required: true,
     };
     addPreScreeningQuestion(newQuestion);
@@ -106,6 +108,8 @@ export default function Step2CVReview() {
   ) => {
     const newQuestion = {
       id: `${suggested.id}-${Date.now()}`,
+      ...(suggested.minValue !== undefined && { minValue: suggested.minValue }),
+      ...(suggested.maxValue !== undefined && { maxValue: suggested.maxValue }),
       question: suggested.question,
       type: suggested.type,
       options: suggested.options,
@@ -124,11 +128,11 @@ export default function Step2CVReview() {
 
   return (
     <>
-      <div className="flex flex-row justify-between w-full gap-4 items-start">
-        <div className="w-4/5 flex flex-col gap-2">
+      <div className="flex w-full flex-row items-start justify-between gap-4">
+        <div className="flex w-4/5 flex-col gap-2">
           <CareerFormCard heading="1. CV Review Settings" icon="">
             <FormSectionHeader marginTop={8}>CV Screening</FormSectionHeader>
-            <p className="text-md font-normal text-gray-600 mb-3">
+            <p className="text-md mb-3 font-normal text-gray-600">
               Jia automatically endorses candidates who meet the chosen criteria
             </p>
             <FormField>
@@ -143,10 +147,10 @@ export default function Step2CVReview() {
               />
             </FormField>
 
-            <hr className="border-t border-gray-300 mt-2 mb-2" />
+            <hr className="mb-2 mt-2 border-t border-gray-300" />
 
             <FormSectionHeader>CV Secret Prompt</FormSectionHeader>
-            <p className="text-md font-normal text-gray-600 mb-3">
+            <p className="text-md mb-3 font-normal text-gray-600">
               Secret Prompts give you extra control over Jia&apos;s evaluation
               style, complementing her accurate assessment of requirements from
               the job description.
@@ -154,7 +158,7 @@ export default function Step2CVReview() {
             <FormField>
               <textarea
                 value={cvSecretPrompt}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg !resize-none !h-20 !overflow-y-auto text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="form-control !h-20 !resize-none !overflow-y-auto text-sm"
                 placeholder="Give higher fit scores to candidates who participate in hackathons or competitions"
                 onChange={(e) => {
                   updateField("cvSecretPrompt", e.target.value);
@@ -164,19 +168,19 @@ export default function Step2CVReview() {
           </CareerFormCard>
 
           <CareerFormCard heading="2. Pre-Screening Questions" icon="">
-            <div className="flex justify-between items-center mb-2">
+            <div className="mb-2 flex items-center justify-between">
               <div>
                 <span className="text-md text-gray-600">
                   Required - Add at least 1 question
                 </span>
                 {errors.preScreeningQuestions && (
-                  <p className="text-xs text-red-500 mt-1">
+                  <p className="mt-1 text-xs text-red-500">
                     {errors.preScreeningQuestions}
                   </p>
                 )}
               </div>
               <button
-                className="bg-black text-white px-4 py-2 rounded-full cursor-pointer text-sm font-medium flex items-center gap-2 hover:bg-gray-800 transition-colors"
+                className="flex cursor-pointer items-center gap-2 rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800"
                 onClick={handleAddQuestion}
               >
                 <i className="la la-plus text-base"></i>
@@ -187,7 +191,7 @@ export default function Step2CVReview() {
             {/* <FormSectionHeader>Questions Preview</FormSectionHeader> */}
 
             {preScreeningQuestions.length === 0 ? (
-              <div className="p-2  text-gray-400 text-md mb-4 ">
+              <div className="text-md mb-4 p-2 text-gray-400">
                 No pre-screening questions added yet. Add at least one question
                 to continue.
               </div>
@@ -201,7 +205,7 @@ export default function Step2CVReview() {
                   items={preScreeningQuestions.map((q) => q.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  <div className="flex flex-col gap-3 mb-4">
+                  <div className="mb-4 flex flex-col gap-3">
                     {preScreeningQuestions.map((q) => {
                       // Check if this is a suggested question by matching the base ID
                       const baseId = q.id.split("-").slice(0, -1).join("-");
@@ -233,7 +237,7 @@ export default function Step2CVReview() {
               </DndContext>
             )}
 
-            <hr className="border-t border-gray-300 my-2" />
+            <hr className="my-2 border-t border-gray-300" />
 
             <FormSectionHeader>
               Suggested Pre-screening Questions
@@ -244,22 +248,26 @@ export default function Step2CVReview() {
                 return (
                   <div
                     key={sq.id}
-                    className="border border-gray-200 rounded-lg p-3 bg-gray-50 flex flex-col gap-2"
+                    className="flex flex-col gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3"
                   >
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <div className="flex flex-col gap-1">
-                        <span className={`text-sm font-semibold ${isAdded ? 'text-gray-400' : 'text-gray-800'}`}>
+                        <span
+                          className={`text-sm font-semibold ${isAdded ? "text-gray-400" : "text-gray-800"}`}
+                        >
                           {sq.header}
                         </span>
-                        <span className={`text-sm ${isAdded ? 'text-gray-400' : 'text-gray-700'}`}>
+                        <span
+                          className={`text-sm ${isAdded ? "text-gray-400" : "text-gray-700"}`}
+                        >
                           {sq.question}
                         </span>
                       </div>
                       <button
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border flex-shrink-0 ${
+                        className={`flex-shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium ${
                           isAdded
-                            ? "bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed"
-                            : "bg-white text-blue-500 border-blue-500 cursor-pointer hover:bg-blue-50"
+                            ? "cursor-not-allowed border-gray-300 bg-gray-200 text-gray-500"
+                            : "cursor-pointer border-blue-500 bg-white text-gray-600 hover:bg-blue-50"
                         } transition-colors`}
                         onClick={() => handleAddSuggestedQuestion(sq)}
                         disabled={isAdded}
@@ -274,7 +282,7 @@ export default function Step2CVReview() {
           </CareerFormCard>
         </div>
 
-        <div className="w-1/5 flex flex-col gap-2">
+        <div className="sticky top-4 flex w-1/5 flex-col gap-2 self-start">
           <CareerFormCard
             heading="Tips"
             iconBgColor="#181D27"
@@ -311,11 +319,11 @@ export default function Step2CVReview() {
             }
           >
             <div className="flex flex-col gap-3">
-              <p className="m-0 text-sm text-gray-700 leading-relaxed">
+              <p className="m-0 text-sm leading-relaxed text-gray-700">
                 <span className="font-semibold">Add a Secret Prompt</span> to
                 fine-tune how Jia scores and evaluates submitted CVs.
               </p>
-              <p className="m-0 text-sm text-gray-700 leading-relaxed">
+              <p className="m-0 text-sm leading-relaxed text-gray-700">
                 <span className="font-semibold">
                   Pre-Screening questions are required
                 </span>{" "}

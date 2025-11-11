@@ -137,7 +137,7 @@ interface CareerFormState {
 
   updateField: <K extends keyof CareerFormState>(
     field: K,
-    value: CareerFormState[K]
+    value: CareerFormState[K],
   ) => void;
 
   validateStep: (step: Step) => boolean;
@@ -154,7 +154,7 @@ interface CareerFormState {
     orgID: string,
     user: User,
     careerId?: string,
-    careerData?: any
+    careerData?: any,
   ) => Promise<void>;
 
   // Pre-screening question actions
@@ -162,24 +162,45 @@ interface CareerFormState {
   removePreScreeningQuestion: (id: string) => void;
   updatePreScreeningQuestion: (
     id: string,
-    updates: Partial<PreScreeningQuestion>
+    updates: Partial<PreScreeningQuestion>,
   ) => void;
   reorderPreScreeningQuestions: (questions: PreScreeningQuestion[]) => void;
 
   // AI Interview question actions
-  generateAIQuestions: (category: keyof CareerFormState["aiInterviewQuestions"]) => Promise<void>;
+  generateAIQuestions: (
+    category: keyof CareerFormState["aiInterviewQuestions"],
+  ) => Promise<void>;
   generateAllAIQuestions: () => Promise<void>;
-  addAIQuestion: (category: keyof CareerFormState["aiInterviewQuestions"], questionText: string) => void;
-  updateAIQuestion: (category: keyof CareerFormState["aiInterviewQuestions"], questionId: string, questionText: string) => void;
-  removeAIQuestion: (category: keyof CareerFormState["aiInterviewQuestions"], questionId: string) => void;
-  reorderAIQuestions: (category: keyof CareerFormState["aiInterviewQuestions"], questions: AIQuestion[]) => void;
-  updateQuestionsToAsk: (category: keyof CareerFormState["aiInterviewQuestions"], count: number) => void;
+  addAIQuestion: (
+    category: keyof CareerFormState["aiInterviewQuestions"],
+    questionText: string,
+  ) => void;
+  updateAIQuestion: (
+    category: keyof CareerFormState["aiInterviewQuestions"],
+    questionId: string,
+    questionText: string,
+  ) => void;
+  removeAIQuestion: (
+    category: keyof CareerFormState["aiInterviewQuestions"],
+    questionId: string,
+  ) => void;
+  reorderAIQuestions: (
+    category: keyof CareerFormState["aiInterviewQuestions"],
+    questions: AIQuestion[],
+  ) => void;
+  updateQuestionsToAsk: (
+    category: keyof CareerFormState["aiInterviewQuestions"],
+    count: number,
+  ) => void;
 
   // Pipeline stage actions
   addPipelineStage: (stage: PipelineStage) => void;
   removePipelineStage: (id: string) => void;
   reorderPipelineStages: (stages: PipelineStage[]) => void;
-  addSubstage: (stageId: string, substage: { id: string; name: string; order: number }) => void;
+  addSubstage: (
+    stageId: string,
+    substage: { id: string; name: string; order: number },
+  ) => void;
   removeSubstage: (stageId: string, substageId: string) => void;
 }
 
@@ -230,7 +251,9 @@ const DEFAULT_PIPELINE_STAGES: PipelineStage[] = [
 ];
 
 // Helper function to migrate old string[] questions to AIQuestion[] format
-const migrateAIQuestions = (questions: any): {
+const migrateAIQuestions = (
+  questions: any,
+): {
   cvValidation: AIQuestionCategory;
   technical: AIQuestionCategory;
   behavioral: AIQuestionCategory;
@@ -253,19 +276,22 @@ const migrateAIQuestions = (questions: any): {
     }
 
     // Check if questions are already in the new format (have 'id' property)
-    const hasNewFormat = category.questions.length > 0 && 
-                         typeof category.questions[0] === 'object' && 
-                         'id' in category.questions[0];
+    const hasNewFormat =
+      category.questions.length > 0 &&
+      typeof category.questions[0] === "object" &&
+      "id" in category.questions[0];
 
     if (hasNewFormat) {
       return category;
     }
 
     // Migrate old string[] format to AIQuestion[] format
-    const migratedQuestions: AIQuestion[] = category.questions.map((q: any) => ({
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      text: typeof q === 'string' ? q : q.text || '',
-    }));
+    const migratedQuestions: AIQuestion[] = category.questions.map(
+      (q: any) => ({
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        text: typeof q === "string" ? q : q.text || "",
+      }),
+    );
 
     return {
       questions: migratedQuestions,
@@ -281,7 +307,6 @@ const migrateAIQuestions = (questions: any): {
     others: migrateCategory(questions.others),
   };
 };
-
 
 const initialState = {
   currentStep: "career-details" as Step,
@@ -350,7 +375,7 @@ export const useCareerFormStore = create<CareerFormState>()(
       // ============================================
       setStep: (step: Step) => {
         const state = get();
-        set({ 
+        set({
           currentStep: step,
           visitedSteps: [...new Set([...state.visitedSteps, step])], // Add to visited steps
         });
@@ -375,19 +400,21 @@ export const useCareerFormStore = create<CareerFormState>()(
 
         if (currentIndex < steps.length - 1) {
           const nextStep = steps[currentIndex + 1];
-          
+
           // FIX: Update state FIRST, BEFORE auto-saving
           // This ensures the new step is saved to the database, not the old one
           set({
             currentStep: nextStep,
-            completedSteps: [...new Set([...state.completedSteps, state.currentStep])],
+            completedSteps: [
+              ...new Set([...state.completedSteps, state.currentStep]),
+            ],
             visitedSteps: [...new Set([...state.visitedSteps, nextStep])], // Add next step to visited
             isDirty: true, // Mark as dirty to ensure autoSave will save
           });
-          
+
           // Now auto-save with the updated step
           await get().autoSave();
-          
+
           return true;
         }
 
@@ -420,12 +447,12 @@ export const useCareerFormStore = create<CareerFormState>()(
 
         // FIX: Update state FIRST, BEFORE auto-saving
         // This ensures the new step is saved to the database, not the old one
-        set({ 
+        set({
           currentStep: step,
           visitedSteps: [...new Set([...state.visitedSteps, step])], // Add to visited steps
           isDirty: true, // Mark as dirty to ensure autoSave will save
         });
-        
+
         await get().autoSave();
         return true;
       },
@@ -469,23 +496,77 @@ export const useCareerFormStore = create<CareerFormState>()(
               state.maximumSalary &&
               Number(state.minimumSalary) > Number(state.maximumSalary)
             ) {
-              errors.salary = "Minimum salary cannot be greater than maximum salary";
+              errors.salary =
+                "Minimum salary cannot be greater than maximum salary";
             }
             break;
 
           case "cv-review":
             if (state.preScreeningQuestions.length === 0) {
-              errors.preScreeningQuestions = "At least 1 pre-screening question is required";
+              errors.preScreeningQuestions =
+                "At least 1 pre-screening question is required";
+            } else {
+              // Validate each question has non-empty text
+              for (const q of state.preScreeningQuestions) {
+                if (!q.question || q.question.trim() === "") {
+                  errors.preScreeningQuestions =
+                    "All questions must have question text";
+                  break;
+                }
+
+                // Validate dropdown/checkboxes have at least 2 options
+                if (
+                  (q.type === "dropdown" || q.type === "checkboxes") &&
+                  q.options
+                ) {
+                  const validOptions = q.options.filter(
+                    (opt) => opt && opt.trim() !== "",
+                  );
+                  if (validOptions.length < 2) {
+                    errors.preScreeningQuestions =
+                      "Dropdown and checkboxes questions must have at least 2 options";
+                    break;
+                  }
+                }
+
+                // Validate range questions have valid min < max
+                if (q.type === "range") {
+                  if (q.minValue === undefined || q.maxValue === undefined) {
+                    errors.preScreeningQuestions =
+                      "Range questions must have both minimum and maximum values";
+                    break;
+                  }
+                  if (q.minValue >= q.maxValue) {
+                    errors.preScreeningQuestions =
+                      "Range minimum must be less than maximum";
+                    break;
+                  }
+                }
+              }
             }
             break;
 
           case "ai-interview":
-            const totalQuestions = Object.values(state.aiInterviewQuestions).reduce(
-              (sum, cat) => sum + cat.questions.length,
-              0
-            );
+            const totalQuestions = Object.values(
+              state.aiInterviewQuestions,
+            ).reduce((sum, cat) => sum + cat.questions.length, 0);
             if (totalQuestions < 5) {
-              errors.aiInterviewQuestions = "Add at least 5 interview questions";
+              errors.aiInterviewQuestions =
+                "Add at least 5 interview questions";
+            } else {
+              // Validate all questions have non-empty text
+              for (const category of Object.values(
+                state.aiInterviewQuestions,
+              )) {
+                for (const question of category.questions) {
+                  if (!question.text || question.text.trim() === "") {
+                    errors.aiInterviewQuestions =
+                      "All interview questions must have question text";
+                    break;
+                  }
+                }
+                if (errors.aiInterviewQuestions) break;
+              }
             }
             break;
 
@@ -505,7 +586,12 @@ export const useCareerFormStore = create<CareerFormState>()(
       },
 
       validateAll: () => {
-        const steps: Step[] = ["career-details", "cv-review", "ai-interview", "pipeline-stages"];
+        const steps: Step[] = [
+          "career-details",
+          "cv-review",
+          "ai-interview",
+          "pipeline-stages",
+        ];
         const state = get();
 
         for (const step of steps) {
@@ -522,7 +608,7 @@ export const useCareerFormStore = create<CareerFormState>()(
       // ============================================
       saveDraft: async () => {
         const state = get();
-        
+
         // Basic validation: require at least a job title for drafts
         // This prevents completely empty/useless drafts from being saved
         if (!state.jobTitle || !state.jobTitle.trim()) {
@@ -535,7 +621,12 @@ export const useCareerFormStore = create<CareerFormState>()(
 
         set({ isSaving: true, saveError: null });
 
-        console.log("Attempting to save draft with orgID:", state.orgID, "user:", state.user.email);
+        console.log(
+          "Attempting to save draft with orgID:",
+          state.orgID,
+          "user:",
+          state.user.email,
+        );
 
         try {
           const payload = {
@@ -604,6 +695,14 @@ export const useCareerFormStore = create<CareerFormState>()(
       submitCareer: async (status: "active" | "inactive") => {
         const state = get();
 
+        // Prevent double submission
+        if (state.isSaving) {
+          console.warn(
+            "Submission already in progress, ignoring duplicate call",
+          );
+          return;
+        }
+
         if (!state.validateAll()) {
           throw new Error("Please complete all required fields");
         }
@@ -626,8 +725,12 @@ export const useCareerFormStore = create<CareerFormState>()(
             screeningSetting: state.cvScreeningSetting,
             requireVideo: state.requireVideo,
             salaryNegotiable: state.salaryNegotiable,
-            minimumSalary: state.minimumSalary ? Number(state.minimumSalary) : null,
-            maximumSalary: state.maximumSalary ? Number(state.maximumSalary) : null,
+            minimumSalary: state.minimumSalary
+              ? Number(state.minimumSalary)
+              : null,
+            maximumSalary: state.maximumSalary
+              ? Number(state.maximumSalary)
+              : null,
             country: state.country,
             province: state.province,
             location: state.city, // Backwards compatibility
@@ -693,7 +796,9 @@ export const useCareerFormStore = create<CareerFormState>()(
             cvSecretPrompt: career.cvSecretPrompt || "",
             preScreeningQuestions: career.preScreeningQuestions || [],
             aiInterviewSecretPrompt: career.aiInterviewSecretPrompt || "",
-            aiInterviewQuestions: migrateAIQuestions(career.aiInterviewQuestions),
+            aiInterviewQuestions: migrateAIQuestions(
+              career.aiInterviewQuestions,
+            ),
             pipelineStages: career.pipelineStages || DEFAULT_PIPELINE_STAGES,
             isDraft: career.isDraft ?? false,
             currentStep: career.currentStep || "career-details",
@@ -714,10 +819,10 @@ export const useCareerFormStore = create<CareerFormState>()(
       initializeForm: async (type, orgID, user, careerId, careerData) => {
         // IMPORTANT: Set orgID and user first before resetting to initialState
         // This prevents losing the orgID and user data when creating a new career
-        
+
         if (type === "edit" && careerId) {
           set({ formType: type, orgID, user });
-          
+
           // If careerData is provided, use it directly (avoid duplicate API call)
           if (careerData) {
             set({
@@ -735,14 +840,21 @@ export const useCareerFormStore = create<CareerFormState>()(
               salaryNegotiable: careerData.salaryNegotiable ?? true,
               currency: careerData.currency || "PHP",
               teamMembers: careerData.teamMembers || [],
-              cvScreeningSetting: careerData.cvScreeningSetting || careerData.screeningSetting || "Good Fit and above",
+              cvScreeningSetting:
+                careerData.cvScreeningSetting ||
+                careerData.screeningSetting ||
+                "Good Fit and above",
               requireVideo: careerData.requireVideo ?? true,
               cvSecretPrompt: careerData.cvSecretPrompt || "",
               preScreeningQuestions: careerData.preScreeningQuestions || [],
-              aiInterviewScreeningSetting: careerData.aiInterviewScreeningSetting || "Good Fit and above",
+              aiInterviewScreeningSetting:
+                careerData.aiInterviewScreeningSetting || "Good Fit and above",
               aiInterviewSecretPrompt: careerData.aiInterviewSecretPrompt || "",
-              aiInterviewQuestions: migrateAIQuestions(careerData.aiInterviewQuestions),
-              pipelineStages: careerData.pipelineStages || DEFAULT_PIPELINE_STAGES,
+              aiInterviewQuestions: migrateAIQuestions(
+                careerData.aiInterviewQuestions,
+              ),
+              pipelineStages:
+                careerData.pipelineStages || DEFAULT_PIPELINE_STAGES,
               isDraft: careerData.isDraft ?? false,
               currentStep: careerData.currentStep || "career-details",
               completedSteps: careerData.completedSteps || [],
@@ -755,11 +867,11 @@ export const useCareerFormStore = create<CareerFormState>()(
           }
         } else {
           // For "add" mode, reset to initialState but preserve orgID and user
-          set({ 
-            ...initialState, 
-            formType: type, 
-            orgID, 
-            user 
+          set({
+            ...initialState,
+            formType: type,
+            orgID,
+            user,
           });
         }
       },
@@ -778,7 +890,9 @@ export const useCareerFormStore = create<CareerFormState>()(
       removePreScreeningQuestion: (id) => {
         const state = get();
         set({
-          preScreeningQuestions: state.preScreeningQuestions.filter((q) => q.id !== id),
+          preScreeningQuestions: state.preScreeningQuestions.filter(
+            (q) => q.id !== id,
+          ),
           isDirty: true,
         });
       },
@@ -787,7 +901,7 @@ export const useCareerFormStore = create<CareerFormState>()(
         const state = get();
         set({
           preScreeningQuestions: state.preScreeningQuestions.map((q) =>
-            q.id === id ? { ...q, ...updates } : q
+            q.id === id ? { ...q, ...updates } : q,
           ),
           isDirty: true,
         });
@@ -822,7 +936,7 @@ export const useCareerFormStore = create<CareerFormState>()(
               id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
               text,
             }));
-            
+
             set({
               aiInterviewQuestions: {
                 ...state.aiInterviewQuestions,
@@ -871,7 +985,7 @@ export const useCareerFormStore = create<CareerFormState>()(
                 id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 text,
               }));
-              
+
               const currentState = get();
               set({
                 aiInterviewQuestions: {
@@ -888,7 +1002,10 @@ export const useCareerFormStore = create<CareerFormState>()(
               });
             }
           } catch (error) {
-            console.error(`Failed to generate questions for ${category}:`, error);
+            console.error(
+              `Failed to generate questions for ${category}:`,
+              error,
+            );
           }
         }
         set({ isSaving: false });
@@ -900,13 +1017,16 @@ export const useCareerFormStore = create<CareerFormState>()(
           id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           text: questionText,
         };
-        
+
         set({
           aiInterviewQuestions: {
             ...state.aiInterviewQuestions,
             [category]: {
               ...state.aiInterviewQuestions[category],
-              questions: [...state.aiInterviewQuestions[category].questions, newQuestion],
+              questions: [
+                ...state.aiInterviewQuestions[category].questions,
+                newQuestion,
+              ],
             },
           },
           isDirty: true,
@@ -915,10 +1035,12 @@ export const useCareerFormStore = create<CareerFormState>()(
 
       updateAIQuestion: (category, questionId, questionText) => {
         const state = get();
-        const updatedQuestions = state.aiInterviewQuestions[category].questions.map((q) =>
-          q.id === questionId ? { ...q, text: questionText } : q
+        const updatedQuestions = state.aiInterviewQuestions[
+          category
+        ].questions.map((q) =>
+          q.id === questionId ? { ...q, text: questionText } : q,
         );
-        
+
         set({
           aiInterviewQuestions: {
             ...state.aiInterviewQuestions,
@@ -939,7 +1061,7 @@ export const useCareerFormStore = create<CareerFormState>()(
             [category]: {
               ...state.aiInterviewQuestions[category],
               questions: state.aiInterviewQuestions[category].questions.filter(
-                (q) => q.id !== questionId
+                (q) => q.id !== questionId,
               ),
             },
           },
@@ -1011,7 +1133,7 @@ export const useCareerFormStore = create<CareerFormState>()(
           pipelineStages: state.pipelineStages.map((stage) =>
             stage.id === stageId
               ? { ...stage, substages: [...stage.substages, substage] }
-              : stage
+              : stage,
           ),
           isDirty: true,
         });
@@ -1026,12 +1148,12 @@ export const useCareerFormStore = create<CareerFormState>()(
                   ...stage,
                   substages: stage.substages.filter((s) => s.id !== substageId),
                 }
-              : stage
+              : stage,
           ),
           isDirty: true,
         });
       },
     }),
-    { name: "CareerFormStore" }
-  )
+    { name: "CareerFormStore" },
+  ),
 );

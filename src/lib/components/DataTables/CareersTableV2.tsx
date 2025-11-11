@@ -49,6 +49,14 @@ export default function CareersV2Table() {
       key: null,
       direction: "ascending",
     },
+    "Last Updated (Newest First)": {
+      key: "updatedAt",
+      direction: "descending",
+    },
+    "Last Updated (Oldest First)": {
+      key: "updatedAt",
+      direction: "ascending",
+    },
     "Oldest Activity": {
       key: "lastActivityAt",
       direction: "ascending",
@@ -106,7 +114,7 @@ export default function CareersV2Table() {
         });
         setAvailableJobSlots(
           (orgDetails.data?.plan?.jobLimit || 3) +
-            (orgDetails.data?.extraJobSlots || 0)
+            (orgDetails.data?.extraJobSlots || 0),
         );
       } catch (error) {
         console.error("Error fetching org details:", error);
@@ -209,7 +217,7 @@ export default function CareersV2Table() {
             </div>
             <input
               type="search"
-              className="form-control ml-auto search-input"
+              className="form-control search-input ml-auto"
               placeholder="Search..."
               value={search}
               onChange={(e) => {
@@ -235,7 +243,7 @@ export default function CareersV2Table() {
                 }}
               >
                 <div
-                  className="mb-0 d-flex align-items-center"
+                  className="d-flex align-items-center mb-0"
                   style={{ gap: "10px" }}
                 >
                   <div
@@ -295,7 +303,7 @@ export default function CareersV2Table() {
               {/* Light table */}
               <div className="table-responsive">
                 {loading ? (
-                  <table className="table align-items-center table-flush">
+                  <table className="align-items-center table-flush table">
                     <thead>
                       <tr>
                         <th
@@ -347,7 +355,7 @@ export default function CareersV2Table() {
                     </tbody>
                   </table>
                 ) : (
-                  <table className="table align-items-center table-flush">
+                  <table className="align-items-center table-flush table">
                     <thead>
                       <tr>
                         <th
@@ -411,7 +419,7 @@ export default function CareersV2Table() {
                         >
                           <td
                             colSpan={8}
-                            className="text-center py-4"
+                            className="py-4 text-center"
                             style={{ verticalAlign: "middle", height: "200px" }}
                           >
                             <div
@@ -430,7 +438,10 @@ export default function CareersV2Table() {
                               if (e.defaultPrevented) return;
                               e.preventDefault();
                               // Route drafts to CareerForm edit page, published careers to manage page
-                              if (item.isDraft === true || item.status === "draft") {
+                              if (
+                                item.isDraft === true ||
+                                item.status === "draft"
+                              ) {
                                 window.location.href = `/recruiter-dashboard/careers/edit/${item._id}`;
                               } else {
                                 window.location.href = `/recruiter-dashboard/careers/manage/${item._id}`;
@@ -485,9 +496,7 @@ export default function CareersV2Table() {
                             </td>
                             <td>
                               {item.updatedAt
-                                ? moment(item.updatedAt).format(
-                                    "MMM DD, YYYY",
-                                  )
+                                ? moment(item.updatedAt).format("MMM DD, YYYY")
                                 : "N/A"}
                             </td>
                             <td>
@@ -514,7 +523,7 @@ export default function CareersV2Table() {
                                   selectedCareer?._id === item._id && (
                                     <div
                                       className={`dropdown-menu dropdown-menu-right w-100 mt-1 org-dropdown-anim${
-                                        menuOpen ? " show" : ""
+                                        menuOpen ? "show" : ""
                                       }`}
                                       style={{
                                         padding: "10px 15px",
@@ -527,7 +536,10 @@ export default function CareersV2Table() {
                                           e.preventDefault();
                                           setMenuOpen(false);
                                           // Route drafts to CareerForm edit page, published careers to manage page
-                                          if (item.isDraft === true || item.status === "draft") {
+                                          if (
+                                            item.isDraft === true ||
+                                            item.status === "draft"
+                                          ) {
                                             window.location.href = `/recruiter-dashboard/careers/edit/${item._id}`;
                                           } else {
                                             window.location.href = `/recruiter-dashboard/careers/manage/${item._id}?tab=edit`;
@@ -556,7 +568,7 @@ export default function CareersV2Table() {
                                           candidateActionToast(
                                             "Career Link Copied to Clipboard",
                                             1300,
-                                            <i className="la la-link mr-1 text-info"></i>,
+                                            <i className="la la-link text-info mr-1"></i>,
                                           );
                                         }}
                                       >

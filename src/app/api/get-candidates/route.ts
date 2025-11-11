@@ -8,12 +8,15 @@ export async function GET(request: Request) {
     const filterStatus = searchParams.get("filterStatus");
     const search = searchParams.get("search");
     const sortBy = searchParams.get("sortBy");
-    console.log("orgID", orgID);
-    
+    console.log("📋 GET CANDIDATES REQUEST:");
+    console.log("  - Filtering by orgID:", orgID);
+    console.log("  - Filter Status:", filterStatus);
+    console.log("  - Search:", search);
+
     if (!orgID) {
       return NextResponse.json(
         { error: "Organization ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -37,8 +40,8 @@ export async function GET(request: Request) {
       },
       {
         $sort: {
-            updatedAt: -1,
-        }
+          updatedAt: -1,
+        },
       },
       {
         $group: {
@@ -62,24 +65,31 @@ export async function GET(request: Request) {
                       $cond: {
                         if: {
                           $or: [
-                            { $eq: ["$$interview.applicationStatus", "Ongoing"] },
+                            {
+                              $eq: ["$$interview.applicationStatus", "Ongoing"],
+                            },
                             { $eq: ["$$interview.applicationStatus", null] },
-                            {$eq:[{$type:'$$interview.applicationStatus'},"missing"]}
+                            {
+                              $eq: [
+                                { $type: "$$interview.applicationStatus" },
+                                "missing",
+                              ],
+                            },
                           ],
-                        }, 
+                        },
                         then: true,
-                        else: false
+                        else: false,
                       },
                     },
                   },
                 },
               },
               then: "Ongoing",
-              else: { $arrayElemAt: [ "$interviews.applicationStatus", 0 ] }
+              else: { $arrayElemAt: ["$interviews.applicationStatus", 0] },
             },
-          }, 
-          activeAt: { $toDate: { $arrayElemAt: [ "$interviews.updatedAt", 0 ] } }
-        }
+          },
+          activeAt: { $toDate: { $arrayElemAt: ["$interviews.updatedAt", 0] } },
+        },
       },
     ];
 
@@ -90,7 +100,7 @@ export async function GET(request: Request) {
         },
       });
     }
-    
+
     let sort: any = { activeAt: -1 };
     if (sortBy === "Oldest Activity") {
       sort = { activeAt: 1 };
@@ -101,18 +111,42 @@ export async function GET(request: Request) {
     }
 
     // Find all interviews and group by email and put them in an array
-    const candidates = await db.collection("interviews").aggregate([
-      ...stages,
-      { $project: { _id: 0, email: "$_id.email", name: "$_id.name", interviews: 1, candidateStatus: 1, activeAt: 1 } },
-      { $sort: sort }
-    ]).toArray();
+    const candidates = await db
+      .collection("interviews")
+      .aggregate([
+        ...stages,
+        {
+          $project: {
+            _id: 0,
+            email: "$_id.email",
+            name: "$_id.name",
+            interviews: 1,
+            candidateStatus: 1,
+            activeAt: 1,
+          },
+        },
+        { $sort: sort },
+      ])
+      .toArray();
+
+    console.log("📊 CANDIDATES FOUND:", candidates.length);
+    if (candidates.length > 0) {
+      console.log(
+        "  - First candidate orgID:",
+        candidates[0].interviews?.[0]?.orgID,
+      );
+      console.log(
+        "  - Sample emails:",
+        candidates.slice(0, 3).map((c) => c.email),
+      );
+    }
 
     return NextResponse.json(candidates);
   } catch (error) {
     console.log(error);
     return NextResponse.json(
       { error: "Failed to fetch candidates" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

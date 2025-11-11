@@ -10,6 +10,8 @@ import OrgInfoTag from "@/lib/components/CareerComponents/OrgInfoTag";
 
 export default function () {
   const [jobDetails, setJobDetails] = useState(null);
+  const [showPreScreening, setShowPreScreening] = useState(false);
+  const [preScreeningAnswers, setPreScreeningAnswers] = useState({});
   const { slug } = useParams();
   const { user } = useAppContext();
 
@@ -24,6 +26,31 @@ export default function () {
   }
 
   const applyForJob = async (job) => {
+    // If job has pre-screening questions and modal is not shown yet, show the modal
+    if (
+      job.preScreeningQuestions &&
+      job.preScreeningQuestions.length > 0 &&
+      !showPreScreening
+    ) {
+      setShowPreScreening(true);
+      return;
+    }
+
+    // Validate pre-screening answers if questions exist
+    if (job.preScreeningQuestions && job.preScreeningQuestions.length > 0) {
+      const validationError = validatePreScreeningAnswers(
+        job.preScreeningQuestions,
+      );
+      if (validationError) {
+        Swal.fire({
+          title: "Incomplete Answers",
+          text: validationError,
+          icon: "warning",
+        });
+        return;
+      }
+    }
+
     let jobApplication = {
       ...job,
       userId: user._id,
@@ -37,6 +64,7 @@ export default function () {
       updatedAt: new Date(),
       interviewID: guid(),
       completedAt: null,
+      preScreeningAnswers: preScreeningAnswers, // Include answers
     };
 
     delete jobApplication._id;
@@ -79,6 +107,75 @@ export default function () {
       });
   };
 
+  const validatePreScreeningAnswers = (questions) => {
+    for (const question of questions) {
+      if (question.required) {
+        const answer = preScreeningAnswers[question.id];
+
+        if (!answer) {
+          return `Please answer the required question: "${question.question}"`;
+        }
+
+        // Validate based on question type
+        if (
+          question.type === "short-answer" ||
+          question.type === "long-answer"
+        ) {
+          if (!answer.trim()) {
+            return `Please provide an answer for: "${question.question}"`;
+          }
+        } else if (question.type === "checkboxes") {
+          if (!Array.isArray(answer) || answer.length === 0) {
+            return `Please select at least one option for: "${question.question}"`;
+          }
+        } else if (question.type === "dropdown") {
+          if (!answer || answer === "") {
+            return `Please select an option for: "${question.question}"`;
+          }
+        } else if (question.type === "range") {
+          const numAnswer = Number(answer);
+          if (isNaN(numAnswer)) {
+            return `Please provide a valid number for: "${question.question}"`;
+          }
+          if (
+            question.minValue !== undefined &&
+            numAnswer < question.minValue
+          ) {
+            return `Answer must be at least ${question.minValue} for: "${question.question}"`;
+          }
+          if (
+            question.maxValue !== undefined &&
+            numAnswer > question.maxValue
+          ) {
+            return `Answer must be at most ${question.maxValue} for: "${question.question}"`;
+          }
+        }
+      }
+    }
+    return null;
+  };
+
+  const handleAnswerChange = (questionId, value) => {
+    setPreScreeningAnswers((prev) => ({
+      ...prev,
+      [questionId]: value,
+    }));
+  };
+
+  const handleCheckboxChange = (questionId, option, checked) => {
+    setPreScreeningAnswers((prev) => {
+      const currentAnswers = prev[questionId] || [];
+      if (checked) {
+        return { ...prev, [questionId]: [...currentAnswers, option] };
+      } else {
+        return {
+          ...prev,
+          [questionId]: currentAnswers.filter((a) => a !== option),
+        };
+      }
+    });
+  };
+
   useEffect(() => {
     fetchJobDetails();
   }, []);
@@ -104,7 +201,7 @@ export default function () {
 
                   {jobDetails?.workSetup && (
                     <strong>
-                      <i className="la la-map-marker mr-1 text-primary"></i>{" "}
+                      <i className="la la-map-marker text-primary mr-1"></i>{" "}
                       {jobDetails?.location} | {jobDetails?.workSetup}{" "}
                       {jobDetails?.workSetupRemarks}
                     </strong>
@@ -199,6 +296,189 @@ export default function () {
           </div>
         </div>
       </div>
+
+      {/* Pre-Screening Questions Modal */}
+      {showPreScreening && jobDetails?.preScreeningQuestions && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+          onClick={() => setShowPreScreening(false)}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              borderRadius: "8px",
+              padding: "32px",
+              maxWidth: "600px",
+              width: "90%",
+              maxHeight: "80vh",
+              overflow: "auto",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ marginBottom: "24px" }}>Pre-Screening Questions</h2>
+            <p style={{ marginBottom: "24px", color: "#6B7280" }}>
+              Please answer the following questions before submitting your
+              application.
+            </p>
+
+            {jobDetails.preScreeningQuestions.map((question, index) => (
+              <div key={question.id} style={{ marginBottom: "24px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "8px",
+                    fontWeight: 500,
+                  }}
+                >
+                  {index + 1}. {question.question}
+                  {question.required && (
+                    <span style={{ color: "red" }}> *</span>
+                  )}
+                </label>
+
+                {question.type === "short-answer" && (
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={preScreeningAnswers[question.id] || ""}
+                    onChange={(e) =>
+                      handleAnswerChange(question.id, e.target.value)
+                    }
+                    placeholder="Your answer"
+                  />
+                )}
+
+                {question.type === "long-answer" && (
+                  <textarea
+                    className="form-control"
+                    rows={4}
+                    value={preScreeningAnswers[question.id] || ""}
+                    onChange={(e) =>
+                      handleAnswerChange(question.id, e.target.value)
+                    }
+                    placeholder="Your answer"
+                  />
+                )}
+
+                {question.type === "dropdown" && (
+                  <select
+                    className="w-full cursor-pointer rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-base font-medium text-gray-800 transition-colors duration-200 hover:bg-gray-100 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                    value={preScreeningAnswers[question.id] || ""}
+                    onChange={(e) =>
+                      handleAnswerChange(question.id, e.target.value)
+                    }
+                    style={{
+                      appearance: "none",
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239CA3AF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "right 0.75rem center",
+                      backgroundSize: "1.25rem",
+                      paddingRight: "2.5rem",
+                    }}
+                  >
+                    <option value="" className="text-gray-400">
+                      Select an option
+                    </option>
+                    {question.options?.map((option, i) => (
+                      <option
+                        key={i}
+                        value={option}
+                        className="py-2.5 font-medium text-gray-800 hover:bg-gray-100"
+                      >
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {question.type === "checkboxes" && (
+                  <div>
+                    {question.options?.map((option, i) => (
+                      <div key={i} style={{ marginBottom: "8px" }}>
+                        <label
+                          style={{ fontWeight: "normal", cursor: "pointer" }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={(
+                              preScreeningAnswers[question.id] || []
+                            ).includes(option)}
+                            onChange={(e) =>
+                              handleCheckboxChange(
+                                question.id,
+                                option,
+                                e.target.checked,
+                              )
+                            }
+                            style={{ marginRight: "8px" }}
+                          />
+                          {option}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {question.type === "range" && (
+                  <div>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={preScreeningAnswers[question.id] || ""}
+                      onChange={(e) =>
+                        handleAnswerChange(question.id, e.target.value)
+                      }
+                      min={question.minValue}
+                      max={question.maxValue}
+                      placeholder={`${question.minValue} - ${question.maxValue}`}
+                    />
+                    <small style={{ color: "#6B7280" }}>
+                      Range: {question.minValue} to {question.maxValue}
+                    </small>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                justifyContent: "flex-end",
+                marginTop: "32px",
+              }}
+            >
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowPreScreening(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setShowPreScreening(false);
+                  applyForJob(jobDetails);
+                }}
+              >
+                Submit Application
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <br />
       <br />
     </div>

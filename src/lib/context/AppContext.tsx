@@ -58,10 +58,17 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
     const orgIDParams = searchParams.get("orgID");
 
     if (orgIDParams) {
+      console.log("🏢 Setting orgID from URL params:", orgIDParams);
       setOrgID(orgIDParams);
     }
 
     if (activeOrg) {
+      console.log(
+        "🏢 Setting orgID from activeOrg:",
+        activeOrg._id,
+        "| Org Name:",
+        activeOrg.name,
+      );
       setOrgID(activeOrg._id);
     }
   }, [activeOrg, searchParams]);

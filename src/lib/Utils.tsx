@@ -2,7 +2,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 
-export const CORE_API_URL = process.env.NEXT_PUBLIC_CORE_API_URL || "http://localhost:4000";
+export const CORE_API_URL =
+  process.env.NEXT_PUBLIC_CORE_API_URL || "http://localhost:4000";
 
 export function validateEmail(email) {
   const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
@@ -104,7 +105,7 @@ export function copyTextToClipboard(text) {
     function (err) {
       console.error("Failed to copy text: ", err);
       errorToast("Failed to Copy", 1000);
-    }
+    },
   );
 }
 
@@ -517,61 +518,74 @@ export async function deleteCareer(careerId: string) {
 }
 
 export const applicantStatusFormatMap = {
-  "Ongoing": {
-      border: "1px solid #FEDF89",
-      backgroundColor: "#FFFAEB",
-      color: "#B54708",
-      dotColor: "#F79009"
+  Ongoing: {
+    border: "1px solid #FEDF89",
+    backgroundColor: "#FFFAEB",
+    color: "#B54708",
+    dotColor: "#F79009",
   },
-  "Dropped": {
-      border: "1px solid #FECDCA",
-      backgroundColor: "#FEF3F2",
-      color: "#B32318",
-      dotColor: "#F04438"
+  Dropped: {
+    border: "1px solid #FECDCA",
+    backgroundColor: "#FEF3F2",
+    color: "#B32318",
+    dotColor: "#F04438",
   },
-  "Cancelled": {
-      border: "1px solid #FECDCA",
-      backgroundColor: "#FEF3F2",
-      color: "#B32318",
-      dotColor: "#F04438"
+  Cancelled: {
+    border: "1px solid #FECDCA",
+    backgroundColor: "#FEF3F2",
+    color: "#B32318",
+    dotColor: "#F04438",
   },
-  "Hired": {
-      border: "1px solid #10B981",
-      backgroundColor: "#ECFDF3",
-      color: "#047857",
-      dotColor: "#12B76A"
+  Hired: {
+    border: "1px solid #10B981",
+    backgroundColor: "#ECFDF3",
+    color: "#047857",
+    dotColor: "#12B76A",
   },
   "No CV Uploaded": {
-      border: "1px solid #E9EAEB",
-      backgroundColor: "#F5F5F5",
-      color: "#414651",
-  }
-}
+    border: "1px solid #E9EAEB",
+    backgroundColor: "#F5F5F5",
+    color: "#414651",
+  },
+};
 
 export const extractInterviewAssessment = (summary: any) => {
   if (!summary) return "";
 
-  const strongBulletPoints = summary.slice(summary.indexOf('# Strong Points') + '# Strong Points'.length, summary.indexOf("# Weak Points") - 1).trim();
-  const endOfWeakPoints = summary.indexOf("# Final assessment") === -1 ? summary.indexOf("# Final Assessment") : summary.indexOf("# Final assessment");
-  const weakBulletPoints = summary.slice(summary.indexOf('# Weak Points') + '# Weak Points'.length, endOfWeakPoints - 1).trim()
+  const strongBulletPoints = summary
+    .slice(
+      summary.indexOf("# Strong Points") + "# Strong Points".length,
+      summary.indexOf("# Weak Points") - 1,
+    )
+    .trim();
+  const endOfWeakPoints =
+    summary.indexOf("# Final assessment") === -1
+      ? summary.indexOf("# Final Assessment")
+      : summary.indexOf("# Final assessment");
+  const weakBulletPoints = summary
+    .slice(
+      summary.indexOf("# Weak Points") + "# Weak Points".length,
+      endOfWeakPoints - 1,
+    )
+    .trim();
 
   const markdownToHtml = (md: string) => {
     if (!md) return "";
     let html = md;
 
-    html = html.replace(/^(\s*[-*])(.+)$/gm, '<li>$2</li>');
+    html = html.replace(/^(\s*[-*])(.+)$/gm, "<li>$2</li>");
 
     html = `<ul>${html}</ul>`;
 
     return html;
   };
   return `<h2>Strong Points</h2>${markdownToHtml(strongBulletPoints)}\n\n<h2>Weak Points</h2>${markdownToHtml(weakBulletPoints)}`;
-}
+};
 
 export const getInvitationEmailTemplate = (
   email: string,
   orgName: string,
-  role: string
+  role: string,
 ) => `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
     <div style="background: linear-gradient(to bottom, #4f04b9f0, #b79fcf76); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -585,8 +599,8 @@ export const getInvitationEmailTemplate = (
       
       <p style="font-size: 16px; line-height: 1.6; color: #333333; margin-bottom: 20px;">
         We are pleased to invite you to join <strong>${orgName}</strong> on Jia as a <strong>${
-  role.charAt(0).toUpperCase() + role.slice(1)
-}</strong>. Your expertise and contribution will be valuable to our team.
+          role.charAt(0).toUpperCase() + role.slice(1)
+        }</strong>. Your expertise and contribution will be valuable to our team.
       </p>
       
       <p style="font-size: 16px; line-height: 1.6; color: #333333; margin-bottom: 30px;">
@@ -623,4 +637,5 @@ export const clearUserSession = () => {
   localStorage.removeItem("role");
   localStorage.removeItem("activeOrg");
   localStorage.removeItem("orgList");
-}
+};
+

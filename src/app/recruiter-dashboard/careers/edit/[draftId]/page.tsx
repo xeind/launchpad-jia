@@ -17,7 +17,7 @@ export default function EditDraftPage() {
   useEffect(() => {
     const fetchDraft = async () => {
       if (!draftId || !orgID) return;
-      
+
       try {
         setLoading(true);
         const response = await axios.post("/api/career-data", {
@@ -26,7 +26,10 @@ export default function EditDraftPage() {
         });
 
         // Verify this is actually a draft
-        if (response.data?.isDraft !== true && response.data?.status !== "draft") {
+        if (
+          response.data?.isDraft !== true &&
+          response.data?.status !== "draft"
+        ) {
           Swal.fire({
             icon: "warning",
             title: "Not a Draft",
@@ -74,7 +77,7 @@ export default function EditDraftPage() {
         />
         <div className="container-fluid mt--7" style={{ paddingTop: "6rem" }}>
           <div className="row">
-            <div className="col text-center py-5">
+            <div className="col py-5 text-center">
               <div className="spinner-border" role="status">
                 <span className="sr-only">Loading...</span>
               </div>

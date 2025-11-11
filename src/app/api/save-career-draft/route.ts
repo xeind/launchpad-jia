@@ -2,10 +2,15 @@ import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongoDB/mongoDB";
 import { guid } from "@/lib/Utils";
 import { ObjectId } from "mongodb";
+import { sanitizeCareerData } from "@/lib/utils/sanitize";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    let body = await request.json();
+
+    // Sanitize all input data to prevent XSS attacks
+    body = sanitizeCareerData(body);
+
     const {
       careerId,
       formType,
@@ -48,7 +53,9 @@ export async function POST(request: Request) {
     let finalOrgID = orgID;
     if (!finalOrgID && user?.email) {
       console.log("OrgID not provided, fetching from user email:", user.email);
-      const member = await db.collection("members").findOne({ email: user.email });
+      const member = await db
+        .collection("members")
+        .findOne({ email: user.email });
       if (member?.orgID) {
         finalOrgID = member.orgID;
         console.log("Auto-assigned orgID from member record:", finalOrgID);
@@ -59,14 +66,24 @@ export async function POST(request: Request) {
 
     // Validate required fields
     if (!finalOrgID) {
-      console.error("Save career draft failed: orgID is missing and could not be auto-assigned");
+      console.error(
+        "Save career draft failed: orgID is missing and could not be auto-assigned",
+      );
       return NextResponse.json(
-        { error: "Organization ID is required. Please ensure you are logged in." },
-        { status: 400 }
+        {
+          error:
+            "Organization ID is required. Please ensure you are logged in.",
+        },
+        { status: 400 },
       );
     }
 
-    console.log("Saving career draft for orgID:", finalOrgID, "formType:", formType);
+    console.log(
+      "Saving career draft for orgID:",
+      finalOrgID,
+      "formType:",
+      formType,
+    );
 
     const draftData = {
       jobTitle: jobTitle || "",
@@ -87,7 +104,8 @@ export async function POST(request: Request) {
       screeningSetting: cvScreeningSetting || "Good Fit and above", // For backward compatibility
       cvSecretPrompt: cvSecretPrompt || "",
       preScreeningQuestions: preScreeningQuestions || [],
-      aiInterviewScreeningSetting: aiInterviewScreeningSetting || "Good Fit and above",
+      aiInterviewScreeningSetting:
+        aiInterviewScreeningSetting || "Good Fit and above",
       requireVideo: requireVideo ?? false,
       aiInterviewSecretPrompt: aiInterviewSecretPrompt || "",
       aiInterviewQuestions: aiInterviewQuestions || {
@@ -100,11 +118,21 @@ export async function POST(request: Request) {
       // Legacy questions field for backward compatibility
       questions: aiInterviewQuestions
         ? [
-            ...aiInterviewQuestions.cvValidation.questions.map((q: any) => q.text || q),
-            ...aiInterviewQuestions.technical.questions.map((q: any) => q.text || q),
-            ...aiInterviewQuestions.behavioral.questions.map((q: any) => q.text || q),
-            ...aiInterviewQuestions.analytical.questions.map((q: any) => q.text || q),
-            ...aiInterviewQuestions.others.questions.map((q: any) => q.text || q),
+            ...aiInterviewQuestions.cvValidation.questions.map(
+              (q: any) => q.text || q,
+            ),
+            ...aiInterviewQuestions.technical.questions.map(
+              (q: any) => q.text || q,
+            ),
+            ...aiInterviewQuestions.behavioral.questions.map(
+              (q: any) => q.text || q,
+            ),
+            ...aiInterviewQuestions.analytical.questions.map(
+              (q: any) => q.text || q,
+            ),
+            ...aiInterviewQuestions.others.questions.map(
+              (q: any) => q.text || q,
+            ),
           ]
         : [],
       pipelineStages: pipelineStages || [],
@@ -120,19 +148,19 @@ export async function POST(request: Request) {
 
     let result: any;
 
-    if (formType === "edit" && careerId) {
+    if (careerId) {
       // Update existing draft
       result = await db.collection("careers").updateOne(
         { _id: new ObjectId(careerId) },
         {
           $set: draftData,
-        }
+        },
       );
 
       if (result.matchedCount === 0) {
         return NextResponse.json(
           { error: "Career not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -163,7 +191,7 @@ export async function POST(request: Request) {
     console.error("Error saving career draft:", error);
     return NextResponse.json(
       { error: "Failed to save draft" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

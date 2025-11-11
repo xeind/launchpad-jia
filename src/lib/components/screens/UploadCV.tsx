@@ -25,6 +25,8 @@ export default function () {
   const [interview, setInterview] = useState(null);
   const [screeningResult, setScreeningResult] = useState(null);
   const [userCV, setUserCV] = useState(null);
+  const [preScreeningAnswers, setPreScreeningAnswers] = useState({});
+  const [preScreeningErrors, setPreScreeningErrors] = useState({});
   const cvSections = [
     "Introduction",
     "Current Position",
@@ -36,7 +38,7 @@ export default function () {
     "Certifications",
     "Awards",
   ];
-  const step = ["Submit CV", "CV Screening", "Review Next Steps"];
+  const step = ["Submit CV", "Pre-Screening Questions", "Review"];
   const stepStatus = ["Completed", "Pending", "In Progress"];
 
   function handleDragOver(e) {
@@ -155,7 +157,7 @@ export default function () {
 
     if (storedSelectedCareer) {
       const parseStoredSelectedCareer = JSON.parse(storedSelectedCareer);
-      fetchInterview(parseStoredSelectedCareer.id);
+      fetchInterview(parseStoredSelectedCareer.interviewID);
     } else {
       alert("No application is currently being managed.");
       window.location.href = pathConstants.dashboard;
@@ -196,14 +198,14 @@ export default function () {
       });
   }
 
-  function handleCVScreen() {
+  function handleContinueToPreScreening() {
     if (editingCV != null) {
       alert("Please save the changes first.");
       return false;
     }
 
     const allEmpty = Object.values(userCV).every(
-      (value: any) => value.trim() == ""
+      (value: any) => value.trim() == "",
     );
 
     if (allEmpty) {
@@ -222,14 +224,13 @@ export default function () {
       if (parsedDigitalCV.errorRemarks) {
         alert(
           "Please fix the errors in the CV first.\n\n" +
-            parsedDigitalCV.errorRemarks
+            parsedDigitalCV.errorRemarks,
         );
         return false;
       }
     }
 
-    setCurrentStep(step[1]);
-
+    // Save CV if there are changes
     if (hasChanges) {
       const formattedUserCV = cvSections.map((section) => ({
         name: section,
@@ -261,16 +262,36 @@ export default function () {
         .then(() => {
           localStorage.setItem(
             "userCV",
-            JSON.stringify({ ...data, ...data.cvData })
+            JSON.stringify({ ...data, ...data.cvData }),
           );
         })
         .catch((err) => {
           alert("Error saving CV. Please try again.");
-          setCurrentStep(step[0]);
           console.log(err);
         });
     }
 
+    // Move to Pre-Screening Questions
+    setCurrentStep(step[1]);
+    setHasChanges(false);
+  }
+
+  function handleCVScreen() {
+    // Validate pre-screening answers
+    const requiredQuestions =
+      interview?.career?.preScreeningQuestions?.filter((q) => q.required) || [];
+
+    const missingAnswers = requiredQuestions.filter(
+      (q) =>
+        !preScreeningAnswers[q.id] || preScreeningAnswers[q.id].trim() === "",
+    );
+
+    if (missingAnswers.length > 0) {
+      alert("Please answer all required questions before continuing.");
+      return false;
+    }
+
+    setCurrentStep(step[2]); // Go directly to Review
     setHasChanges(true);
 
     axios({
@@ -279,6 +300,7 @@ export default function () {
       data: {
         interviewID: interview.interviewID,
         userEmail: user.email,
+        preScreeningAnswers,
       },
     })
       .then((res) => {
@@ -286,15 +308,14 @@ export default function () {
 
         if (result.error) {
           alert(result.message);
-          setCurrentStep(step[0]);
+          setCurrentStep(step[1]);
         } else {
-          setCurrentStep(step[2]);
           setScreeningResult(result);
         }
       })
       .catch((err) => {
         alert("Error screening CV. Please try again.");
-        setCurrentStep(step[0]);
+        setCurrentStep(step[1]);
         console.log(err);
       })
       .finally(() => {
@@ -548,7 +569,7 @@ export default function () {
                               }
                               onClick={() =>
                                 handleEditCV(
-                                  editingCV == section ? null : section
+                                  editingCV == section ? null : section,
                                 )
                               }
                               onContextMenu={(e) => e.preventDefault()}
@@ -602,22 +623,157 @@ export default function () {
                       </div>
                     </div>
                   ))}
-                  <button onClick={handleCVScreen}>Submit CV</button>
+                  <button onClick={handleContinueToPreScreening}>
+                    Continue →
+                  </button>
                 </div>
               )}
             </>
           )}
 
           {currentStep == step[1] && (
-            <div className={styles.cvScreeningContainer}>
-              <img alt="" src={assetConstants.loading} />
-              <span className={styles.title}>Sit tight!</span>
-              <span className={styles.description}>
-                Our smart reviewer is checking your qualifications.
-              </span>
-              <span className={styles.description}>
-                We'll let you know what's next in just a moment.
-              </span>
+            <div className={styles.cvDetailsContainer}>
+              {interview?.career?.preScreeningQuestions?.map(
+                (question, index) => (
+                  <div key={question.id} className={styles.gradient}>
+                    <div className={styles.cvDetailsCard}>
+                      <span className={styles.sectionTitle}>
+                        Question {index + 1}
+                        {question.required && (
+                          <span style={{ color: "red" }}> *</span>
+                        )}
+                      </span>
+                      <div className={styles.detailsContainer}>
+                        <p className={styles.fileTitle}>{question.question}</p>
+
+                        {question.type === "short-answer" && (
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Your answer..."
+                            value={preScreeningAnswers[question.id] || ""}
+                            onChange={(e) =>
+                              setPreScreeningAnswers({
+                                ...preScreeningAnswers,
+                                [question.id]: e.target.value,
+                              })
+                            }
+                          />
+                        )}
+
+                        {question.type === "long-answer" && (
+                          <textarea
+                            className="form-control"
+                            placeholder="Your answer..."
+                            rows={4}
+                            value={preScreeningAnswers[question.id] || ""}
+                            onChange={(e) =>
+                              setPreScreeningAnswers({
+                                ...preScreeningAnswers,
+                                [question.id]: e.target.value,
+                              })
+                            }
+                          />
+                        )}
+
+                        {question.type === "dropdown" && (
+                          <select
+                            className="w-full cursor-pointer rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-base font-medium text-gray-800 transition-colors duration-200 hover:bg-gray-100 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                            value={preScreeningAnswers[question.id] || ""}
+                            onChange={(e) =>
+                              setPreScreeningAnswers({
+                                ...preScreeningAnswers,
+                                [question.id]: e.target.value,
+                              })
+                            }
+                            style={{
+                              appearance: "none",
+                              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239CA3AF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                              backgroundRepeat: "no-repeat",
+                              backgroundPosition: "right 0.75rem center",
+                              backgroundSize: "1.25rem",
+                              paddingRight: "2.5rem",
+                            }}
+                          >
+                            <option value="">Select an option</option>
+                            {question.options?.map((option, i) => (
+                              <option key={i} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+
+                        {question.type === "checkboxes" && (
+                          <div>
+                            {question.options?.map((option, i) => (
+                              <label
+                                key={i}
+                                style={{
+                                  display: "block",
+                                  marginBottom: "8px",
+                                }}
+                              >
+                                <input
+                                  type="checkbox"
+                                  value={option}
+                                  checked={(
+                                    preScreeningAnswers[question.id] || []
+                                  ).includes(option)}
+                                  onChange={(e) => {
+                                    const current =
+                                      preScreeningAnswers[question.id] || [];
+                                    const updated = e.target.checked
+                                      ? [...current, option]
+                                      : current.filter((v) => v !== option);
+                                    setPreScreeningAnswers({
+                                      ...preScreeningAnswers,
+                                      [question.id]: updated,
+                                    });
+                                  }}
+                                />{" "}
+                                {option}
+                              </label>
+                            ))}
+                          </div>
+                        )}
+
+                        {question.type === "range" && (
+                          <div>
+                            <input
+                              type="range"
+                              min={question.minValue || 0}
+                              max={question.maxValue || 10}
+                              value={
+                                preScreeningAnswers[question.id] ||
+                                question.minValue ||
+                                0
+                              }
+                              onChange={(e) =>
+                                setPreScreeningAnswers({
+                                  ...preScreeningAnswers,
+                                  [question.id]: e.target.value,
+                                })
+                              }
+                              style={{ width: "100%" }}
+                            />
+                            <div
+                              style={{ textAlign: "center", marginTop: "8px" }}
+                            >
+                              Value:{" "}
+                              {preScreeningAnswers[question.id] ||
+                                question.minValue ||
+                                0}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ),
+              )}
+
+              <button onClick={handleCVScreen}>Continue →</button>
             </div>
           )}
 

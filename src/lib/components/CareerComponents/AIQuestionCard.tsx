@@ -102,7 +102,7 @@ export default function AIQuestionCard({
         </div>
 
         {/* Card Content */}
-        <div className="flex-1 flex items-start gap-3 p-3 min-w-0">
+        <div className="flex-1 flex items-center gap-3 p-3 min-w-0">
           {/* Question Number */}
           <div className="flex items-center justify-center w-8 h-8 bg-gray-100 border border-gray-300 rounded text-xs font-medium text-gray-600 flex-shrink-0">
             {index + 1}

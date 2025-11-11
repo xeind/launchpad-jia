@@ -537,6 +537,9 @@ export default function Step4PipelineStages() {
             display: "flex",
             flexDirection: "column",
             gap: 8,
+            position: "sticky",
+            top: "1rem",
+            alignSelf: "flex-start",
           }}
         >
           <CareerFormCard

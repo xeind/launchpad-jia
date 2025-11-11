@@ -79,40 +79,16 @@ export async function signInWithGoogle(type) {
         (host.includes("localhost") || host.includes("hirejia.ai")) &&
         res.data.role == "applicant"
       ) {
-        Swal.fire({
-          title: "No Account Found",
-          text: `There's no employer account associated with your login ${res.data.email}.`,
-          icon: "warning",
-          showCancelButton: true, // second button
-          confirmButtonText: "OK",
-          cancelButtonText: "I'm a job seeker",
-          customClass: {
-            title: styles.swalTitle,
-            icon: styles.swalIcon,
-            confirmButton: styles.swalConfirmButton,
-            cancelButton: styles.swalCancelButton,
-            htmlContainer: styles.swalDescription,
-            popup: styles.swalContainer,
-            actions: styles.swalAction,
-          },
-        }).then((result) => {
-          if (result.isConfirmed) {
-            Swal.close();
-          } else if (result.dismiss === Swal.DismissReason.cancel) {
-            window.location.href = host.includes("localhost")
-              ? "/job-portal"
-              : "https://www.hellojia.ai";
-          }
-        });
-
-        localStorage.removeItem("user");
-        return false;
+        // Redirect applicants to the dashboard
+        localStorage.role = "applicant";
+        window.location.href = "/dashboard";
+        return;
       }
 
       // handle direct interview link redirects
       if (window.location.search.includes("?directInterviewID")) {
         let directInterviewID = window.location.search.split(
-          "?directInterviewID="
+          "?directInterviewID=",
         )[1];
 
         if (directInterviewID) {
@@ -167,9 +143,7 @@ export async function signInWithGoogle(type) {
 
       if (orgData.data.length == 0) {
         localStorage.role = "applicant";
-        window.location.href = window.location.origin.includes("localhost")
-          ? "/job-portal"
-          : "https://www.hellojia.ai";
+        window.location.href = "/dashboard";
         return;
       }
 

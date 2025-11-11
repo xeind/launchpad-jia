@@ -69,6 +69,7 @@ export default function Step3AIInterview() {
   const [generatingCategory, setGeneratingCategory] =
     useState<QuestionCategory | null>(null);
 
+  const [isGeneratingAll, setIsGeneratingAll] = useState(false);
   const [newQuestionIndex, setNewQuestionIndex] = useState<{
     category: QuestionCategory | null;
     index: number;
@@ -104,11 +105,11 @@ export default function Step3AIInterview() {
   };
 
   const handleGenerateAll = async () => {
-    setGeneratingCategory("cvValidation");
+    setIsGeneratingAll(true);
     try {
       await generateAllAIQuestions();
     } finally {
-      setGeneratingCategory(null);
+      setIsGeneratingAll(false);
     }
   };
 
@@ -147,13 +148,13 @@ export default function Step3AIInterview() {
 
   return (
     <>
-      <div className="flex flex-row justify-between w-full gap-4 items-start">
-        <div className="w-4/5 flex flex-col gap-2">
+      <div className="flex w-full flex-row items-start justify-between gap-4">
+        <div className="flex w-4/5 flex-col gap-2">
           <CareerFormCard heading="1. AI Interview Settings" icon="">
             <FormSectionHeader marginTop={8}>
               AI Interview Screening
             </FormSectionHeader>
-            <p className="text-md font-normal text-gray-600 md-3">
+            <p className="text-md md-3 font-normal text-gray-600">
               Jia automatically endorses candidates who meet the chosen criteria
             </p>
             <FormField>
@@ -167,7 +168,7 @@ export default function Step3AIInterview() {
               />
             </FormField>
 
-            <hr className="border-t border-gray-300 mt-2 mb-2" />
+            <hr className="mb-2 mt-2 border-t border-gray-300" />
 
             <div
               style={{
@@ -203,15 +204,15 @@ export default function Step3AIInterview() {
                 </label>
               </div>
             </div>
-            <p className="text-md font-normal text-gray-600 mb-3">
+            <p className="text-md mb-3 font-normal text-gray-600">
               Require candidates to keep their camera on. Recordings will appear
               on their analysis page.
             </p>
 
-            <hr className="border-t border-gray-300 mt-2 mb-2" />
+            <hr className="mb-2 mt-2 border-t border-gray-300" />
 
             <FormSectionHeader>AI Interview Secret Prompts</FormSectionHeader>
-            <p className="text-md font-normal text-gray-700 mb-3">
+            <p className="text-md mb-3 font-normal text-gray-700">
               Secret Prompts give you extra control over Jia&apos;s evaluation
               style, complementing her accurate assessment of requirements from
               the job description.
@@ -219,7 +220,7 @@ export default function Step3AIInterview() {
             <FormField>
               <textarea
                 value={aiInterviewSecretPrompt}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg !resize-none !h-20 !overflow-y-auto text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="form-control !h-20 !resize-none !overflow-y-auto text-sm"
                 placeholder="Enter a secret prompt (e.g. Treat candidates who speak in Taglish, English, or Tagalog equally. Focus on clarity, coherence, and confidence rather than language preference or accent.)"
                 onChange={(e) => {
                   updateField("aiInterviewSecretPrompt", e.target.value);
@@ -228,63 +229,55 @@ export default function Step3AIInterview() {
             </FormField>
           </CareerFormCard>
 
-          <CareerFormCard heading="" icon="">
-            {/* Card Header with Title, Badge, and Generate All Button */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                marginBottom: 16,
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>
-                  2. AI Interview Questions
-                </h3>
-                <span
-                  style={{
-                    background: totalQuestions < 5 ? "#FEE2E2" : "#DBEAFE",
-                    color: totalQuestions < 5 ? "#DC2626" : "#1E40AF",
-                    padding: "4px 12px",
-                    borderRadius: "12px",
-                    fontSize: 14,
-                    fontWeight: 600,
-                  }}
-                >
-                  {totalQuestions}
-                </span>
-              </div>
+          <CareerFormCard
+            heading="2. AI Interview Questions"
+            icon=""
+            headingBadge={
+              <span
+                style={{
+                  background: totalQuestions < 5 ? "#FEE2E2" : "#DBEAFE",
+                  color: totalQuestions < 5 ? "#DC2626" : "#1E40AF",
+                  padding: "4px 12px",
+                  borderRadius: "12px",
+                  fontSize: 14,
+                  fontWeight: 600,
+                }}
+              >
+                {totalQuestions}
+              </span>
+            }
+            headingAction={
               <button
                 style={{
                   color: "#fff",
                   border: "none",
                   padding: "10px 16px",
-                  cursor: generatingCategory ? "not-allowed" : "pointer",
+                  cursor:
+                    isGeneratingAll || generatingCategory
+                      ? "not-allowed"
+                      : "pointer",
                   fontSize: 14,
                   fontWeight: 500,
                   display: "flex",
                   alignItems: "center",
                   gap: 8,
-                  opacity: generatingCategory ? 0.6 : 1,
+                  opacity: isGeneratingAll || generatingCategory ? 0.6 : 1,
                 }}
-                className="bg-black rounded-full"
+                className="rounded-full bg-black"
                 onClick={handleGenerateAll}
-                disabled={!!generatingCategory}
+                disabled={isGeneratingAll || !!generatingCategory}
               >
                 <i className="la la-magic"></i>
-                {generatingCategory
-                  ? "Generating..."
-                  : "Generate all questions"}
+                {isGeneratingAll ? "Generating..." : "Generate all questions"}
               </button>
-            </div>
-
+            }
+          >
             {totalQuestions < 5 && (
               <p
                 style={{
                   fontSize: 14,
                   color: "#EF4444",
-                  marginTop: -8,
+                  marginTop: 0,
                   marginBottom: 16,
                 }}
               >
@@ -296,7 +289,7 @@ export default function Step3AIInterview() {
               (category, index) => (
                 <div key={category}>
                   {index > 0 && (
-                    <hr className="border-t border-gray-300 my-4" />
+                    <hr className="my-4 border-t border-gray-300" />
                   )}
 
                   {/* Category Header */}
@@ -371,23 +364,9 @@ export default function Step3AIInterview() {
                       }}
                     >
                       <button
-                        style={{
-                          color: "#fff",
-                          border: "none",
-                          padding: "10px 16px",
-                          cursor: generatingCategory
-                            ? "not-allowed"
-                            : "pointer",
-                          fontSize: 14,
-                          fontWeight: 500,
-                          opacity: generatingCategory ? 0.6 : 1,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                        }}
-                        className="bg-black rounded-full"
+                        className="flex items-center gap-2 rounded-full border border-gray-600 bg-black px-4 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
                         onClick={() => handleGenerateQuestions(category)}
-                        disabled={!!generatingCategory}
+                        disabled={isGeneratingAll || !!generatingCategory}
                       >
                         {generatingCategory === category ? (
                           <>
@@ -403,19 +382,7 @@ export default function Step3AIInterview() {
                       </button>
 
                       <button
-                        style={{
-                          background: "#fff",
-                          color: "#000",
-                          border: "1px solid #000",
-                          padding: "10px 16px",
-                          cursor: "pointer",
-                          fontSize: 14,
-                          fontWeight: 500,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                        }}
-                        className="bg-white text-black border border-gray-600 flex font-normal rounded-full"
+                        className="flex items-center gap-2 rounded-full border border-gray-600 bg-white px-4 py-2 text-sm font-bold text-black"
                         onClick={() => handleAddCustomQuestion(category)}
                       >
                         <i className="la la-plus"></i>
@@ -472,7 +439,7 @@ export default function Step3AIInterview() {
           </CareerFormCard>
         </div>
 
-        <div className="w-1/5 flex flex-col gap-2">
+        <div className="sticky top-4 flex w-1/5 flex-col gap-2 self-start">
           <CareerFormCard
             heading="Tips"
             iconBgColor="#181D27"
@@ -509,17 +476,17 @@ export default function Step3AIInterview() {
             }
           >
             <div className="flex flex-col gap-3">
-              <p className="m-0 text-sm text-gray-700 leading-relaxed">
+              <p className="m-0 text-sm leading-relaxed text-gray-700">
                 <span className="font-semibold">Mix question types</span> –
                 Balance technical, behavioral, and analytical questions for a
                 comprehensive evaluation.
               </p>
-              <p className="m-0 text-sm text-gray-700 leading-relaxed">
+              <p className="m-0 text-sm leading-relaxed text-gray-700">
                 <span className="font-semibold">Use AI generation</span> – Let
                 Jia generate questions based on your job description, then
                 customize as needed.
               </p>
-              <p className="m-0 text-sm text-gray-700 leading-relaxed">
+              <p className="m-0 text-sm leading-relaxed text-gray-700">
                 <span className="font-semibold">Keep it focused</span> – Aim for
                 5-10 questions total to respect candidate time while gathering
                 sufficient insight.

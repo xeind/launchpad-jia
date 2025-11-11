@@ -6,14 +6,35 @@ export async function POST(request: Request) {
   try {
     let jobApplicationData = await request.json();
 
-    const { jobTitle, description, questions, name, email, status, origin } =
-      jobApplicationData;
+    const {
+      jobTitle,
+      description,
+      questions,
+      name,
+      email,
+      status,
+      origin,
+      orgID,
+    } = jobApplicationData;
+
+    console.log("📝 New Job Application:");
+    console.log("  - Job Title:", jobTitle);
+    console.log("  - Applicant:", name, email);
+    console.log("  - OrgID:", orgID);
 
     // Validate required fields
     if (!jobTitle || !description || !questions || !name || !email) {
       return NextResponse.json(
         { error: "Job title, description and questions are required" },
-        { status: 400 }
+        { status: 400 },
+      );
+    }
+
+    if (!orgID) {
+      console.error("⚠️  WARNING: Application submitted without orgID!");
+      return NextResponse.json(
+        { error: "Organization ID is missing from job posting" },
+        { status: 400 },
       );
     }
 
@@ -71,7 +92,9 @@ export async function POST(request: Request) {
     });
 
     if (status === "For Interview" && origin === "direct-interview") {
-      const interviewDetails = await db.collection("interviews").findOne({ id: interviewData.id, email: interviewData.email });
+      const interviewDetails = await db
+        .collection("interviews")
+        .findOne({ id: interviewData.id, email: interviewData.email });
       if (interviewDetails) {
         await db.collection("interview-history").insertOne({
           interviewUID: interviewDetails._id.toString(),
@@ -81,10 +104,12 @@ export async function POST(request: Request) {
         });
 
         // Update career lastActivityAt to current date
-        await db.collection("careers").updateOne(
-          { id: interviewDetails.id },
-          { $set: { lastActivityAt: new Date() } }
-        );
+        await db
+          .collection("careers")
+          .updateOne(
+            { id: interviewDetails.id },
+            { $set: { lastActivityAt: new Date() } },
+          );
       }
     }
 
@@ -96,7 +121,7 @@ export async function POST(request: Request) {
     console.error("Error adding career:", error);
     return NextResponse.json(
       { error: "Failed to add career" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
