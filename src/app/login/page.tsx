@@ -75,13 +75,13 @@ export default function () {
                   });
                   localStorage.role = "admin";
                   localStorage.activeOrg = JSON.stringify({
-                    _id: "682d3fc222462d03263b0881",
+                    _id: "690c490e359e1d0cc1369e9f",
                     name: "Test Organization",
                     role: "hiring_manager",
                   });
                   localStorage.orgList = JSON.stringify([
                     {
-                      _id: "682d3fc222462d03263b0881",
+                      _id: "690c490e359e1d0cc1369e9f",
                       name: "Test Organization",
                       role: "hiring_manager",
                     },
