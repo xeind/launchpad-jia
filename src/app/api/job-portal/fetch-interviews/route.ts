@@ -47,23 +47,14 @@ export async function POST(request: Request) {
         $addFields: {
           debugCareerID: "$careerID",
           debugID: "$id",
+          lookupField: { $ifNull: ["$careerID", "$id"] },
         },
       },
       {
         $lookup: {
           from: "careers",
-          let: {
-            careerId: { $ifNull: ["$careerID", "$id"] }, // Use careerID if exists, otherwise use id
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $eq: ["$id", "$$careerId"],
-                },
-              },
-            },
-          ],
+          localField: "lookupField",
+          foreignField: "id",
           as: "career",
         },
       },
@@ -129,18 +120,6 @@ export async function POST(request: Request) {
     console.log(
       "🔍 [API job-portal/fetch-interviews] First interview id field:",
       interviews[0].id,
-    );
-    console.log(
-      "🔍 [API job-portal/fetch-interviews] First interview debugCareerID:",
-      interviews[0].debugCareerID,
-    );
-    console.log(
-      "🔍 [API job-portal/fetch-interviews] First interview career array:",
-      interviews[0].career,
-    );
-    console.log(
-      "🔍 [API job-portal/fetch-interviews] Pre-screening questions:",
-      interviews[0].career?.preScreeningQuestions,
     );
   }
 

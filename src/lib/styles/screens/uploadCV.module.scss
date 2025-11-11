@@ -689,13 +689,44 @@
               margin: 0;
             }
           }
-          textarea {
+          textarea:not(.answerInput):not(.answerTextarea) {
             height: 300px !important;
           }
         }
       }
     }
-    button {
+
+    // Pre-screening question input styles
+    .answerInput,
+    .answerTextarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.5;
+      font-family: inherit;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+
+      &:focus {
+        outline: none;
+        border-color: #9fcaed;
+        box-shadow: 0 0 0 3px rgba(159, 202, 237, 0.1);
+      }
+    }
+
+    .answerInput {
+      height: 40px;
+    }
+
+    .answerTextarea {
+      resize: vertical;
+      min-height: 100px;
+      max-height: 300px;
+    }
+
+    .submitButton {
       align-self: flex-end;
       margin: 32px 0 0 0;
       padding: 10px 48.5px;
@@ -705,6 +736,72 @@
       img {
         width: 20px;
         height: 20px;
+      }
+    }
+
+    // Custom range slider styles
+    .slider {
+      -webkit-appearance: none;
+      appearance: none;
+      background: #d1d5db;
+      cursor: pointer;
+      border-radius: 5px;
+
+      &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          #9fcaed 0%,
+          #ceb6da 50%,
+          #ebacc9 100%
+        );
+        cursor: pointer;
+        border: 2px solid #ffffff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        transition: all 0.2s ease;
+
+        &:hover {
+          transform: scale(1.1);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+      }
+
+      &::-moz-range-thumb {
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          #9fcaed 0%,
+          #ceb6da 50%,
+          #ebacc9 100%
+        );
+        cursor: pointer;
+        border: 2px solid #ffffff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        transition: all 0.2s ease;
+
+        &:hover {
+          transform: scale(1.1);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+      }
+
+      &::-webkit-slider-track {
+        background: #d1d5db;
+        height: 8px;
+        border-radius: 5px;
+      }
+
+      &::-moz-range-track {
+        background: #d1d5db;
+        height: 8px;
+        border-radius: 5px;
+        border: none;
       }
     }
   }
@@ -822,7 +919,7 @@
       }
     }
     .cvDetailsContainer {
-      button {
+      button:not(.submitButton) {
         width: 100%;
         align-self: unset;
         padding: 10px 0;

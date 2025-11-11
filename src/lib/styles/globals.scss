@@ -18,10 +18,12 @@
 }
 
 .sidebar-main {
-  background: linear-gradient(to bottom, #fff, #ffffff, #b79fcfca),
+  background:
+    linear-gradient(to bottom, #fff, #ffffff, #b79fcfca),
     url(https://images.pexels.com/photos/804269/pexels-photo-804269.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2);
 
-  box-shadow: rgba(0, 0, 0, 0.869) 0px 10px 36px 0px,
+  box-shadow:
+    rgba(0, 0, 0, 0.869) 0px 10px 36px 0px,
     rgba(0, 0, 0, 0.909) 0px 0px 0px 1px !important;
   border-right: 1px solid #ddd !important;
   z-index: 2000 !important;
@@ -100,7 +102,8 @@
 }
 
 .gradient-1 {
-  background: linear-gradient(to bottom, #4f04b9f0, #b79fcf76),
+  background:
+    linear-gradient(to bottom, #4f04b9f0, #b79fcf76),
     url(https://images.pexels.com/photos/804269/pexels-photo-804269.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2);
   background-size: cover;
 }
@@ -218,7 +221,7 @@ td {
 }
 
 .form-control {
-  border: 1px solid #E9EAEB !important;
+  border: 1px solid #e9eaeb !important;
   border-radius: 8px !important;
   color: #333 !important;
   font-size: 1rem !important;
@@ -249,7 +252,7 @@ select.form-control {
   }
 }
 
-textarea {
+textarea:not(.answerInput):not(.answerTextarea) {
   height: 400px !important;
 }
 
@@ -266,7 +269,7 @@ input::-webkit-inner-spin-button {
 }
 
 /* Firefox */
-input[type=number] {
+input[type="number"] {
   -moz-appearance: textfield;
 }
 
@@ -486,7 +489,8 @@ input[type=number] {
     width: 100%;
     padding: 10px 20px;
 
-    background: linear-gradient(to left, #fff, #ece3f58d),
+    background:
+      linear-gradient(to left, #fff, #ece3f58d),
       url(https://images.pexels.com/photos/7130498/pexels-photo-7130498.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1);
     background-size: cover;
     border-left: 4px solid royalblue;
@@ -625,12 +629,14 @@ tr {
 
 // Dropdown item hover and active state
 .dropdown-menu .dropdown-item {
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .dropdown-menu .dropdown-item:hover,
 .dropdown-menu .dropdown-item:focus {
-  background: #F3F4F6 !important;
+  background: #f3f4f6 !important;
   /* grayish hover */
   color: #000000 !important;
 }
@@ -848,7 +854,7 @@ th[scope="col"] {
   justify-content: space-between;
   gap: 10px;
   background: #fff;
-  border: 1px solid #E9EAEB;
+  border: 1px solid #e9eaeb;
   padding: 10px 20px;
   border-radius: 8px;
   transition: 0.3s;
@@ -857,7 +863,7 @@ th[scope="col"] {
 
   &:hover {
     background: #f8f9fa;
-    border-color: #E9EAEB;
+    border-color: #e9eaeb;
   }
 }
 
@@ -1278,7 +1284,6 @@ $gifURL: "/gr-1.gif";
 }
 
 @media (max-width: 899px) {
-
   .main-content,
   #panel {
     margin-left: 0 !important;
@@ -2141,11 +2146,13 @@ $gifURL: "/gr-1.gif";
 .layered-card-outer {
   // margin-top: 16px;
   width: 100%;
-  background: linear-gradient(90deg,
-      #9fcaed 0%,
-      #ceb6da 33%,
-      #ebacc9 66%,
-      #fccec0 100%);
+  background: linear-gradient(
+    90deg,
+    #9fcaed 0%,
+    #ceb6da 33%,
+    #ebacc9 66%,
+    #fccec0 100%
+  );
   border-radius: 20px;
   padding-top: 10px;
 }
@@ -2210,19 +2217,22 @@ $gifURL: "/gr-1.gif";
   transition: 0.4s;
 }
 
-input:checked+.slider {
-  background: linear-gradient(90deg,
-      #fccec0 0%,
-      #ebacc9 33%,
-      #ceb6da 66%,
-      #9fcaed 100%);
+input:checked + .slider {
+  background: linear-gradient(
+    90deg,
+    #fccec0 0%,
+    #ebacc9 33%,
+    #ceb6da 66%,
+    #9fcaed 100%
+  );
 }
 
-input:focus+.slider {
-  box-shadow: 0 0 1px linear-gradient(90deg, #fccec0 0%, #ebacc9 33%, #ceb6da 66%, #9fcaed 100%);
+input:focus + .slider {
+  box-shadow: 0 0 1px
+    linear-gradient(90deg, #fccec0 0%, #ebacc9 33%, #ceb6da 66%, #9fcaed 100%);
 }
 
-input:checked+.slider:before {
+input:checked + .slider:before {
   -webkit-transform: translateX(20px);
   -ms-transform: translateX(20px);
   transform: translateX(20px);
@@ -2347,7 +2357,9 @@ input:checked+.slider:before {
   gap: 10px;
   font-weight: 500;
   font-size: 15px;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
   color: #414651;
   border-radius: 10px;
   background-color: #ffffff;
@@ -2413,11 +2425,13 @@ input:checked+.slider:before {
       &.active {
         color: #252b37;
         border-bottom: 2px solid transparent;
-        background-image: linear-gradient(90deg,
-            #9fcaed 0%,
-            #ceb6da 33%,
-            #ebacc9 66%,
-            #fccec0 100%);
+        background-image: linear-gradient(
+          90deg,
+          #9fcaed 0%,
+          #ceb6da 33%,
+          #ebacc9 66%,
+          #fccec0 100%
+        );
         background-repeat: no-repeat;
         background-position: bottom left;
         background-size: 100% 2px;
@@ -2430,11 +2444,13 @@ input:checked+.slider:before {
 .jia-gradient-text {
   font-size: 2rem;
   font-weight: bold;
-  background: linear-gradient(90deg,
-      #9fcaed 0%,
-      #ceb6da 33%,
-      #ebacc9 66%,
-      #fccec0 100%);
+  background: linear-gradient(
+    90deg,
+    #9fcaed 0%,
+    #ceb6da 33%,
+    #ebacc9 66%,
+    #fccec0 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -2443,7 +2459,9 @@ input:checked+.slider:before {
 .lazy-load-fade-in {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
 }
 
 .lazy-load-fade-in.visible {
@@ -2454,7 +2472,9 @@ input:checked+.slider:before {
 .lazy-load-fade-in-delayed {
   opacity: 0;
   transform: translateY(30px);
-  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  transition:
+    opacity 0.8s ease-out,
+    transform 0.8s ease-out;
 }
 
 .lazy-load-fade-in-delayed.visible {
@@ -2463,45 +2483,47 @@ input:checked+.slider:before {
 }
 
 /* Staggered animations for child elements */
-.lazy-load-stagger>* {
+.lazy-load-stagger > * {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
 }
 
-.lazy-load-stagger.visible>*,
-.lazy-load-stagger-visible>* {
+.lazy-load-stagger.visible > *,
+.lazy-load-stagger-visible > * {
   opacity: 1;
   transform: translateY(0);
 }
 
-.lazy-load-stagger.visible>*:nth-child(1),
-.lazy-load-stagger-visible>*:nth-child(1) {
+.lazy-load-stagger.visible > *:nth-child(1),
+.lazy-load-stagger-visible > *:nth-child(1) {
   transition-delay: 0.1s;
 }
 
-.lazy-load-stagger.visible>*:nth-child(2),
-.lazy-load-stagger-visible>*:nth-child(2) {
+.lazy-load-stagger.visible > *:nth-child(2),
+.lazy-load-stagger-visible > *:nth-child(2) {
   transition-delay: 0.2s;
 }
 
-.lazy-load-stagger.visible>*:nth-child(3),
-.lazy-load-stagger-visible>*:nth-child(3) {
+.lazy-load-stagger.visible > *:nth-child(3),
+.lazy-load-stagger-visible > *:nth-child(3) {
   transition-delay: 0.3s;
 }
 
-.lazy-load-stagger.visible>*:nth-child(4),
-.lazy-load-stagger-visible>*:nth-child(4) {
+.lazy-load-stagger.visible > *:nth-child(4),
+.lazy-load-stagger-visible > *:nth-child(4) {
   transition-delay: 0.4s;
 }
 
-.lazy-load-stagger.visible>*:nth-child(5),
-.lazy-load-stagger-visible>*:nth-child(5) {
+.lazy-load-stagger.visible > *:nth-child(5),
+.lazy-load-stagger-visible > *:nth-child(5) {
   transition-delay: 0.5s;
 }
 
-.lazy-load-stagger.visible>*:nth-child(6),
-.lazy-load-stagger-visible>*:nth-child(6) {
+.lazy-load-stagger.visible > *:nth-child(6),
+.lazy-load-stagger-visible > *:nth-child(6) {
   transition-delay: 0.6s;
 }
 
@@ -2519,7 +2541,7 @@ html {
 /* Performance optimizations */
 .lazy-load-fade-in,
 .lazy-load-fade-in-delayed,
-.lazy-load-stagger>* {
+.lazy-load-stagger > * {
   will-change: opacity, transform;
   backface-visibility: hidden;
   transform: translateZ(0);
@@ -2527,10 +2549,9 @@ html {
 
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
-
   .lazy-load-fade-in,
   .lazy-load-fade-in-delayed,
-  .lazy-load-stagger>* {
+  .lazy-load-stagger > * {
     transition: none !important;
     animation: none !important;
   }

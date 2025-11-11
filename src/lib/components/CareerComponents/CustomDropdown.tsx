@@ -54,27 +54,11 @@ export default function CustomDropdown(props) {
     >
       <button
         disabled={settingList.length === 0}
-        className={`
-          w-full
-          bg-white
-          border border-gray-300
-          rounded-lg
-          px-4 py-2.5
-          text-base
-          font-medium
-          text-[#181D27]
-          capitalize
-          cursor-pointer
-          flex items-center gap-2
-          transition-colors duration-200
-          ${screeningSetting ? "hover:bg-gray-100" : ""}
-        `}
+        className={`flex w-full cursor-pointer items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-base font-medium capitalize text-[#181D27] transition-colors duration-200 ${screeningSetting ? "hover:bg-gray-100" : ""} `}
         type="button"
         onClick={() => setDropdownOpen((v) => !v)}
       >
-        <span
-          className={screeningSetting ? "text-gray-800" : "text-gray-400"}
-        >
+        <span className={screeningSetting ? "text-gray-800" : "text-gray-400"}>
           <i
             className={
               settingList.find((setting) => setting.name === screeningSetting)
@@ -86,61 +70,26 @@ export default function CustomDropdown(props) {
         <i className="la la-angle-down ml-auto"></i>
       </button>
       <div
-        className={`
-          dropdown-menu
-          mt-1
-          ${dropdownOpen ? "show" : ""}
-          p-2.5
-          max-h-[200px]
-          overflow-y-auto
-          absolute
-          top-full
-          left-0
-          right-0
-          z-[1000]
-          bg-white
-          border border-gray-300
-          rounded-lg
-          shadow-md
-        `}
+        className={`dropdown-menu mt-1 ${dropdownOpen ? "show" : "hidden"} absolute left-0 right-0 top-full z-[1000] max-h-[200px] overflow-y-auto rounded-lg border border-gray-300 bg-white p-2.5 shadow-md`}
+        style={{ display: dropdownOpen ? "block" : "none" }}
       >
         {settingList.map((setting, index) => (
-          <div
-            className={
-              index < settingList.length - 1 ? "border-b border-gray-300" : ""
-            }
-            key={index}
-          >
+          <div key={index}>
             <button
-              className={`
-                dropdown-item
-                w-full
-                !rounded-md
-                overflow-hidden
-                py-2.5 px-3
-                text-black
-                ${boldSelected && screeningSetting === setting.name ? "font-bold" : "font-medium"}
-                bg-transparent
-                !flex !flex-row !justify-between !items-center
-                capitalize
-                border-none
-                cursor-pointer
-                transition-colors duration-150
-                hover:bg-gray-100
-              `}
+              className={`dropdown-item w-full overflow-hidden !rounded-md px-3 py-2.5 text-black ${boldSelected && screeningSetting === setting.name ? "font-bold" : "font-medium"} !flex cursor-pointer !flex-row !items-center !justify-between border-none bg-transparent capitalize transition-colors duration-150 hover:bg-gray-100`}
               onClick={() => {
                 onSelectSetting(setting.name);
                 setDropdownOpen(false);
               }}
             >
-              <div className="flex items-center gap-2 flex-1 min-w-0">
+              <div className="flex min-w-0 flex-1 items-center gap-2">
                 {setting.icon && <i className={setting.icon}></i>}
                 <span className="truncate">
                   {setting.name?.replace("_", " ")}
                 </span>
               </div>
               {setting.name === screeningSetting && (
-                <i className="la la-check text-lg text-blue-500 font-bold flex-shrink-0 ml-2"></i>
+                <i className="la la-check ml-2 flex-shrink-0 text-lg font-bold text-blue-500"></i>
               )}
             </button>
           </div>

@@ -326,22 +326,16 @@ export default function () {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 style={{ marginBottom: "24px" }}>Pre-Screening Questions</h2>
-            <p style={{ marginBottom: "24px", color: "#6B7280" }}>
-              Please answer the following questions before submitting your
-              application.
-            </p>
-
             {jobDetails.preScreeningQuestions.map((question, index) => (
               <div key={question.id} style={{ marginBottom: "24px" }}>
                 <label
                   style={{
                     display: "block",
                     marginBottom: "8px",
-                    fontWeight: 500,
+                    fontWeight: 600,
                   }}
                 >
-                  {index + 1}. {question.question}
+                  {question.question}
                   {question.required && (
                     <span style={{ color: "red" }}> *</span>
                   )}
