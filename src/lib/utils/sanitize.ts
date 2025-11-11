@@ -1,4 +1,3 @@
-import DOMPurify from "isomorphic-dompurify";
 import validator from "validator";
 
 /**
@@ -35,27 +34,13 @@ export function sanitizeHtml(html: string): string {
   if (!html || typeof html !== "string") {
     return "";
   }
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: [
-      "b",
-      "i",
-      "em",
-      "strong",
-      "a",
-      "p",
-      "br",
-      "ul",
-      "ol",
-      "li",
-      "h1",
-      "h2",
-      "h3",
-      "h4",
-      "h5",
-      "h6",
-    ],
-    ALLOWED_ATTR: ["href", "target", "rel"],
-  });
+  // Simple sanitization: escape HTML entities
+  return html
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
 }
 
 /**
