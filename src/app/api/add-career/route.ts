@@ -3,9 +3,35 @@ import connectMongoDB from "@/lib/mongoDB/mongoDB";
 import { guid } from "@/lib/Utils";
 import { ObjectId } from "mongodb";
 import { sanitizeCareerData } from "@/lib/utils/sanitize";
+import {
+  verifyAuth,
+  requireRole,
+  requireOrgAccess,
+} from "@/lib/auth/verifyAuth";
 
 export async function POST(request: Request) {
   try {
+    // Verify user authentication
+    const user = await verifyAuth(request);
+    if (!user) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 },
+      );
+    }
+
+    // Check if user has recruiter/admin role
+    const hasRequiredRole = await requireRole(user, ["admin", "recruiter"]);
+    if (!hasRequiredRole) {
+      return NextResponse.json(
+        {
+          error:
+            "Insufficient permissions. Only recruiters and admins can create careers.",
+        },
+        { status: 403 },
+      );
+    }
+
     let careerData = await request.json();
 
     // Sanitize all input data to prevent XSS attacks
@@ -45,6 +71,19 @@ export async function POST(request: Request) {
       currentStep,
       completedSteps,
     } = careerData;
+
+    // Check organization access (admins can access any org, others must match their org)
+    const hasOrgAccess = await requireOrgAccess(user, orgID);
+    if (!hasOrgAccess) {
+      return NextResponse.json(
+        {
+          error:
+            "Organization access denied. You can only create careers for your organization.",
+        },
+        { status: 403 },
+      );
+    }
+
     // Validate required fields
     if (!jobTitle || !description || !location || !workSetup) {
       return NextResponse.json(

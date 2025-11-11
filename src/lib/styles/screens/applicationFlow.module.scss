@@ -1,0 +1,345 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modalContainer {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+
+  .jobInfo {
+    flex: 1;
+    h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+    }
+    p {
+      margin: 4px 0 0 0;
+      font-size: 14px;
+      color: #6b7280;
+    }
+  }
+
+  .closeButton {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #f3f4f6;
+      color: #111827;
+    }
+  }
+}
+
+.stepIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+
+  .stepItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+
+    &:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      right: -50%;
+      height: 2px;
+      background: #e5e7eb;
+      z-index: 0;
+    }
+
+    &.completed::after {
+      background: #9747ff;
+    }
+
+    .stepCircle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #f3f4f6;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      position: relative;
+      z-index: 1;
+      transition: all 0.3s;
+    }
+
+    &.active .stepCircle {
+      background: #9747ff;
+      color: white;
+    }
+
+    &.completed .stepCircle {
+      background: #9747ff;
+      color: white;
+    }
+
+    .stepLabel {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #6b7280;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    &.active .stepLabel {
+      color: #111827;
+      font-weight: 600;
+    }
+  }
+}
+
+.modalBody {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+
+  .stepContent {
+    h2 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .stepDescription {
+      margin: 0 0 24px 0;
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .placeholderStep {
+      text-align: center;
+      padding: 40px 20px;
+      color: #9ca3af;
+    }
+
+    .questionsContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .questionContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+
+        .required {
+          color: #ef4444;
+          margin-left: 4px;
+        }
+      }
+
+      input[type="text"],
+      input[type="number"],
+      textarea,
+      select {
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 14px;
+        color: #111827;
+        transition: all 0.2s;
+
+        &:focus {
+          outline: none;
+          border-color: #9747ff;
+          box-shadow: 0 0 0 3px rgba(151, 71, 255, 0.1);
+        }
+
+        &.inputError {
+          border-color: #ef4444;
+        }
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 100px;
+        font-family: inherit;
+      }
+
+      .errorText {
+        font-size: 13px;
+        color: #ef4444;
+      }
+
+      .checkboxGroup {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        .checkboxLabel {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+
+          input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+          }
+
+          span {
+            font-size: 14px;
+            color: #374151;
+          }
+        }
+      }
+
+      .rangeContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        input[type="number"] {
+          width: 150px;
+        }
+
+        .rangeLabel {
+          font-size: 13px;
+          color: #6b7280;
+        }
+      }
+    }
+
+    .reviewContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+
+      .reviewItem {
+        padding: 16px;
+        background: #f9fafb;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+
+        h4 {
+          margin: 0 0 8px 0;
+          font-size: 14px;
+          font-weight: 600;
+          color: #374151;
+        }
+
+        p {
+          margin: 0;
+          font-size: 14px;
+          color: #111827;
+        }
+      }
+    }
+  }
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid #e5e7eb;
+
+  button {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+
+  .secondaryButton {
+    background: white;
+    color: #374151;
+    border: 1px solid #d1d5db;
+
+    &:hover {
+      background: #f9fafb;
+    }
+  }
+
+  .primaryButton {
+    background: #9747ff;
+    color: white;
+
+    &:hover {
+      background: #8530ff;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .modalOverlay {
+    padding: 0;
+  }
+
+  .modalContainer {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .stepIndicator {
+    .stepItem {
+      .stepLabel {
+        font-size: 10px;
+      }
+    }
+  }
+}

@@ -755,7 +755,17 @@ export const useCareerFormStore = create<CareerFormState>()(
 
           const endpoint =
             state.formType === "add" ? "/api/add-career" : "/api/update-career";
-          const response = await axios.post(endpoint, payload);
+
+          // Get auth token from localStorage
+          const authToken =
+            typeof window !== "undefined"
+              ? localStorage.getItem("authToken")
+              : null;
+          const headers = authToken
+            ? { Authorization: `Bearer ${authToken}` }
+            : {};
+
+          const response = await axios.post(endpoint, payload, { headers });
 
           if (response.status === 200) {
             set({
