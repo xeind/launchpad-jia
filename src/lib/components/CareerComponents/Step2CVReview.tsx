@@ -158,7 +158,7 @@ export default function Step2CVReview() {
             <FormField>
               <textarea
                 value={cvSecretPrompt}
-                className="form-control !h-20 !resize-none !overflow-y-auto text-sm"
+                className="form-control answerInput !h-20 !resize-none !overflow-y-auto text-sm"
                 placeholder="Give higher fit scores to candidates who participate in hackathons or competitions"
                 onChange={(e) => {
                   updateField("cvSecretPrompt", e.target.value);
@@ -285,7 +285,7 @@ export default function Step2CVReview() {
         <div className="sticky top-4 flex w-1/5 flex-col gap-2 self-start">
           <CareerFormCard
             heading="Tips"
-            iconBgColor="#181D27"
+            iconBgColor="transparent"
             customIcon={
               <svg
                 width="20"

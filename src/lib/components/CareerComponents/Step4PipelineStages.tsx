@@ -544,7 +544,7 @@ export default function Step4PipelineStages() {
         >
           <CareerFormCard
             heading="Tips"
-            iconBgColor="#181D27"
+            iconBgColor="transparent"
             customIcon={
               <svg
                 width="20"

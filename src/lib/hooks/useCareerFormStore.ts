@@ -41,7 +41,7 @@ interface PipelineStage {
   }>;
 }
 
-interface TeamMember {
+export interface TeamMember {
   id: string;
   name: string;
   email: string;
@@ -165,6 +165,11 @@ interface CareerFormState {
     updates: Partial<PreScreeningQuestion>,
   ) => void;
   reorderPreScreeningQuestions: (questions: PreScreeningQuestion[]) => void;
+
+  // Team member actions
+  addTeamMember: (member: TeamMember) => void;
+  removeTeamMember: (id: string) => void;
+  updateTeamMemberRole: (id: string, role: string) => void;
 
   // AI Interview question actions
   generateAIQuestions: (
@@ -825,6 +830,21 @@ export const useCareerFormStore = create<CareerFormState>()(
 
           // If careerData is provided, use it directly (avoid duplicate API call)
           if (careerData) {
+            const teamMembers = careerData.teamMembers || [];
+            // Ensure current user is in team members as Job Owner
+            const currentUserAsOwner = {
+              id: `owner-${user.email}`,
+              name: user.name,
+              email: user.email,
+              role: "Job Owner" as const,
+            };
+            const hasOwner = teamMembers.some(
+              (m: any) => m.role === "Job Owner",
+            );
+            const finalTeamMembers = hasOwner
+              ? teamMembers
+              : [currentUserAsOwner, ...teamMembers];
+
             set({
               careerId: careerData._id,
               jobTitle: careerData.jobTitle || "",
@@ -839,7 +859,7 @@ export const useCareerFormStore = create<CareerFormState>()(
               maximumSalary: careerData.maximumSalary?.toString() || "",
               salaryNegotiable: careerData.salaryNegotiable ?? true,
               currency: careerData.currency || "PHP",
-              teamMembers: careerData.teamMembers || [],
+              teamMembers: finalTeamMembers,
               cvScreeningSetting:
                 careerData.cvScreeningSetting ||
                 careerData.screeningSetting ||
@@ -867,11 +887,18 @@ export const useCareerFormStore = create<CareerFormState>()(
           }
         } else {
           // For "add" mode, reset to initialState but preserve orgID and user
+          const currentUserAsOwner = {
+            id: `owner-${user.email}`,
+            name: user.name,
+            email: user.email,
+            role: "Job Owner" as const,
+          };
           set({
             ...initialState,
             formType: type,
             orgID,
             user,
+            teamMembers: [currentUserAsOwner],
           });
         }
       },
@@ -932,24 +959,26 @@ export const useCareerFormStore = create<CareerFormState>()(
           if (response.status === 200) {
             const questionStrings: string[] = response.data.questions || [];
             // Convert string[] to AIQuestion[] with unique IDs
-            const questions: AIQuestion[] = questionStrings.map((text) => ({
+            const newQuestions: AIQuestion[] = questionStrings.map((text) => ({
               id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
               text,
             }));
 
+            const currentState = get();
+            const updatedQuestions = [
+              ...currentState.aiInterviewQuestions[category].questions,
+              ...newQuestions,
+            ];
+
             set({
               aiInterviewQuestions: {
-                ...state.aiInterviewQuestions,
+                ...currentState.aiInterviewQuestions,
                 [category]: {
-                  ...state.aiInterviewQuestions[category],
-                  questions: [
-                    ...state.aiInterviewQuestions[category].questions,
-                    ...questions,
-                  ],
+                  questions: updatedQuestions,
+                  questionsToAsk: Math.min(3, updatedQuestions.length),
                 },
               },
               isDirty: true,
-              isSaving: false,
             });
           }
         } catch (error) {
@@ -968,8 +997,9 @@ export const useCareerFormStore = create<CareerFormState>()(
           "others",
         ];
 
+        set({ isSaving: true });
+
         for (const category of categories) {
-          set({ isSaving: true });
           try {
             const response = await axios.post("/api/generate-questions", {
               category,
@@ -981,24 +1011,30 @@ export const useCareerFormStore = create<CareerFormState>()(
             if (response.status === 200) {
               const questionStrings: string[] = response.data.questions || [];
               // Convert string[] to AIQuestion[] with unique IDs
-              const questions: AIQuestion[] = questionStrings.map((text) => ({
-                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                text,
-              }));
+              const newQuestions: AIQuestion[] = questionStrings.map(
+                (text) => ({
+                  id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                  text,
+                }),
+              );
 
-              const currentState = get();
-              set({
-                aiInterviewQuestions: {
-                  ...currentState.aiInterviewQuestions,
-                  [category]: {
-                    ...currentState.aiInterviewQuestions[category],
-                    questions: [
-                      ...currentState.aiInterviewQuestions[category].questions,
-                      ...questions,
-                    ],
+              // Use functional update to ensure we have the latest state
+              set((currentState) => {
+                const updatedQuestions = [
+                  ...currentState.aiInterviewQuestions[category].questions,
+                  ...newQuestions,
+                ];
+
+                return {
+                  aiInterviewQuestions: {
+                    ...currentState.aiInterviewQuestions,
+                    [category]: {
+                      questions: updatedQuestions,
+                      questionsToAsk: Math.min(3, updatedQuestions.length),
+                    },
                   },
-                },
-                isDirty: true,
+                  isDirty: true,
+                };
               });
             }
           } catch (error) {
@@ -1018,18 +1054,21 @@ export const useCareerFormStore = create<CareerFormState>()(
           text: questionText,
         };
 
+        const updatedQuestions = [
+          ...state.aiInterviewQuestions[category].questions,
+          newQuestion,
+        ];
+
         set({
           aiInterviewQuestions: {
             ...state.aiInterviewQuestions,
             [category]: {
-              ...state.aiInterviewQuestions[category],
-              questions: [
-                ...state.aiInterviewQuestions[category].questions,
-                newQuestion,
-              ],
+              questions: updatedQuestions,
+              questionsToAsk: Math.min(3, updatedQuestions.length),
             },
           },
           isDirty: true,
+          isSaving: false,
         });
       },
 
@@ -1149,6 +1188,46 @@ export const useCareerFormStore = create<CareerFormState>()(
                   substages: stage.substages.filter((s) => s.id !== substageId),
                 }
               : stage,
+          ),
+          isDirty: true,
+        });
+      },
+
+      // ============================================
+      // TEAM MEMBERS
+      // ============================================
+      addTeamMember: (member) => {
+        const state = get();
+        // Prevent adding duplicate members
+        if (state.teamMembers.some((m) => m.email === member.email)) {
+          return;
+        }
+        set({
+          teamMembers: [...state.teamMembers, member],
+          isDirty: true,
+        });
+      },
+
+      removeTeamMember: (id) => {
+        const state = get();
+        // Prevent removing the Job Owner
+        const memberToRemove = state.teamMembers.find((m) => m.id === id);
+        if (memberToRemove?.role === "Job Owner") {
+          return;
+        }
+        set({
+          teamMembers: state.teamMembers.filter((m) => m.id !== id),
+          isDirty: true,
+        });
+      },
+
+      updateTeamMemberRole: (id, role) => {
+        const state = get();
+        set({
+          teamMembers: state.teamMembers.map((member) =>
+            member.id === id
+              ? { ...member, role: role as TeamMember["role"] }
+              : member,
           ),
           isDirty: true,
         });

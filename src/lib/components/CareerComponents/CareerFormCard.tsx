@@ -43,10 +43,10 @@ export default function CareerFormCard({
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: 8,
-              paddingLeft: 10,
+              // padding: 8,
+              // paddingLeft: 10,
               paddingTop: 0,
-              gap: 12,
+              // gap: 12,
             }}
           >
             <div
@@ -54,7 +54,7 @@ export default function CareerFormCard({
                 display: "flex",
                 flexDirection: "row",
                 alignItems: "center",
-                gap: 12,
+                gap: 4,
               }}
             >
               {/* Chevron toggle button - only show if onToggle is provided */}
@@ -86,6 +86,8 @@ export default function CareerFormCard({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    marginBottom: 0,
+                    paddingBottom: 0,
                   }}
                 >
                   {customIcon || (

@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     if (!_id) {
       return NextResponse.json(
         { error: "Job Object ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -37,6 +37,11 @@ export async function POST(request: Request) {
       dataUpdates.cvScreeningSetting = dataUpdates.screeningSetting;
     }
 
+    console.log(
+      "🔍 [API update-career] Updating preScreeningQuestions:",
+      dataUpdates.preScreeningQuestions,
+    );
+
     const career = {
       ...dataUpdates,
       updatedAt: new Date(),
@@ -54,7 +59,7 @@ export async function POST(request: Request) {
     console.error("Error adding career:", error);
     return NextResponse.json(
       { error: "Failed to add career" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

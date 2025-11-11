@@ -18,6 +18,7 @@ export async function POST(request: Request) {
       currentStep,
       completedSteps,
       visitedSteps,
+      status, // Preserve existing status if provided
       // Step 1: Career Details
       jobTitle,
       employmentType,
@@ -149,11 +150,27 @@ export async function POST(request: Request) {
     let result: any;
 
     if (careerId) {
-      // Update existing draft
+      // Update existing career - preserve status for published careers
+      const existingCareer = await db
+        .collection("careers")
+        .findOne({ _id: new ObjectId(careerId) });
+      if (!existingCareer) {
+        return NextResponse.json(
+          { error: "Career not found" },
+          { status: 404 },
+        );
+      }
+
+      // Preserve the existing status (don't change active careers to draft)
+      const updatedDraftData = {
+        ...draftData,
+        status: existingCareer.status || "draft",
+      };
+
       result = await db.collection("careers").updateOne(
         { _id: new ObjectId(careerId) },
         {
-          $set: draftData,
+          $set: updatedDraftData,
         },
       );
 

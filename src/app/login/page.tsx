@@ -59,6 +59,60 @@ export default function () {
               <span>Continue with Google</span>
             </button>
 
+            {/* Test Login Buttons */}
+            <div className="mt-4 space-y-2">
+              <button
+                className="btn btn-auth flex w-full items-center justify-center bg-blue-600 text-white hover:bg-blue-700"
+                onClick={() => {
+                  // Simulate recruiter login
+                  localStorage.authToken = "test-token-recruiter";
+                  localStorage.user = JSON.stringify({
+                    email: "test.recruiter@hirejia.ai",
+                    image:
+                      "https://api.dicebear.com/9.x/avataaars/svg?seed=test-recruiter",
+                    name: "Test Recruiter",
+                    role: "admin",
+                  });
+                  localStorage.role = "admin";
+                  localStorage.activeOrg = JSON.stringify({
+                    _id: "682d3fc222462d03263b0881",
+                    name: "Test Organization",
+                    role: "hiring_manager",
+                  });
+                  localStorage.orgList = JSON.stringify([
+                    {
+                      _id: "682d3fc222462d03263b0881",
+                      name: "Test Organization",
+                      role: "hiring_manager",
+                    },
+                  ]);
+                  window.location.href =
+                    "/recruiter-dashboard/careers?orgID=690c490e359e1d0cc1369e9f";
+                }}
+              >
+                <span>Login Test Recruiter Account</span>
+              </button>
+
+              <button
+                className="btn btn-auth flex w-full items-center justify-center bg-green-600 text-white hover:bg-green-700"
+                onClick={() => {
+                  // Simulate applicant login
+                  localStorage.authToken = "test-token-applicant";
+                  localStorage.user = JSON.stringify({
+                    email: "test.applicant@hirejia.ai",
+                    image:
+                      "https://api.dicebear.com/9.x/avataaars/svg?seed=test-applicant",
+                    name: "Test Applicant",
+                    role: "applicant",
+                  });
+                  localStorage.role = "applicant";
+                  window.location.href = "/dashboard";
+                }}
+              >
+                <span>Login Test Applicant Account</span>
+              </button>
+            </div>
+
             {/* <button
               className="btn btn-auth"
               style={{ border: "2px solid #ddd" }}

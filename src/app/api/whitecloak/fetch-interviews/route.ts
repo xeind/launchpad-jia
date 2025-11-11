@@ -16,7 +16,7 @@ export async function POST(request: Request) {
         {
           $lookup: {
             from: "careers",
-            localField: "careerID",
+            localField: "lookupField",
             foreignField: "id",
             as: "career",
           },

@@ -11,7 +11,7 @@ import { checkFile } from "@/lib/utils/helpersV2";
 import { CORE_API_URL } from "@/lib/Utils";
 import axios from "axios";
 import Markdown from "react-markdown";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function () {
   const fileInputRef = useRef(null);
@@ -171,11 +171,21 @@ export default function () {
     sessionStorage.setItem("hasChanges", JSON.stringify(hasChanges));
   }, [hasChanges]);
 
+  useEffect(() => {
+    const handleFocus = () => {
+      if (interview?.interviewID) {
+        fetchInterview(interview.interviewID);
+      }
+    };
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [interview?.interviewID]); // eslint-disable-line react-hooks/exhaustive-deps
+
   function fetchInterview(interviewID) {
     axios({
       method: "POST",
       url: "/api/job-portal/fetch-interviews",
-      data: { email: user.email, interviewID },
+      data: { email: user.email, interviewID, _t: Date.now() },
     })
       .then((res) => {
         const result = res.data;
@@ -194,8 +204,22 @@ export default function () {
               "🔍 [UploadCV] Pre-screening questions:",
               result[0].career?.preScreeningQuestions,
             );
+            console.log(
+              "🔍 [UploadCV] Interview has embedded questions:",
+              result[0].preScreeningQuestions,
+            );
             setCurrentStep(step[0]);
             setInterview(result[0]);
+
+            // Initialize pre-screening answers with defaults for range questions
+            const initialAnswers = {};
+            result[0].career?.preScreeningQuestions?.forEach((question) => {
+              if (question.type === "range") {
+                initialAnswers[question.id] = question.minValue || 0;
+              }
+            });
+            setPreScreeningAnswers(initialAnswers);
+
             setLoading(false);
           }
         }
@@ -831,29 +855,30 @@ export default function () {
 
                             {question.type === "range" && (
                               <div className="space-y-3">
-                                <input
-                                  type="range"
-                                  min={question.minValue || 0}
-                                  max={question.maxValue || 10}
-                                  value={
-                                    preScreeningAnswers[question.id] ||
-                                    question.minValue ||
-                                    0
-                                  }
-                                  onChange={(e) =>
-                                    setPreScreeningAnswers({
-                                      ...preScreeningAnswers,
-                                      [question.id]: e.target.value,
-                                    })
-                                  }
-                                  className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200"
-                                />
-                                <div className="text-center">
-                                  <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">
-                                    Value:{" "}
-                                    {preScreeningAnswers[question.id] ||
+                                <div className="flex items-center gap-3">
+                                  <input
+                                    type="number"
+                                    min={question.minValue || 0}
+                                    max={question.maxValue || 10}
+                                    step="1"
+                                    value={
+                                      preScreeningAnswers[question.id] ||
                                       question.minValue ||
-                                      0}
+                                      0
+                                    }
+                                    onChange={(e) =>
+                                      setPreScreeningAnswers({
+                                        ...preScreeningAnswers,
+                                        [question.id]:
+                                          parseInt(e.target.value) || 0,
+                                      })
+                                    }
+                                    className="answerInput flex-1"
+                                    placeholder={`Enter value (${question.minValue || 0} - ${question.maxValue || 10})`}
+                                  />
+                                  <span className="whitespace-nowrap text-sm text-gray-500">
+                                    Range: {question.minValue || 0} -{" "}
+                                    {question.maxValue || 10}
                                   </span>
                                 </div>
                               </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useCareerFormStore } from "@/lib/hooks/useCareerFormStore";
+import { useCareerFormStore, Step } from "@/lib/hooks/useCareerFormStore";
 import { useAppContext } from "@/lib/context/AppContext";
 import { successToast, errorToast } from "@/lib/Utils";
 import CareerFormHeader from "./CareerFormHeader";
@@ -15,6 +15,7 @@ import Step5Review from "./Step5Review";
 export default function CareerForm({
   career,
   formType,
+  setShowEditModal,
 }: {
   career?: any;
   formType: "add" | "edit";
@@ -50,6 +51,40 @@ export default function CareerForm({
       errorToast(error.message || "Failed to save draft", 3000);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Handle discard edit (for published careers)
+  const handleDiscardEdit = () => {
+    setShowEditModal?.(false);
+  };
+
+  // Handle save edit (for published careers - save without advancing steps)
+  const handleSaveEdit = async () => {
+    setIsSaving(true);
+    try {
+      await submitCareer("active");
+      if (saveError) {
+        errorToast(saveError, 3000);
+      } else {
+        successToast("Career updated successfully!", 3000);
+        setShowEditModal?.(false);
+      }
+    } catch (error: any) {
+      errorToast(error.message || "An error occurred", 3000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Handle close (for review step or published career edit)
+  const handleClose = () => {
+    if (formType === "edit" && career?.status === "active") {
+      // For published career editing, close the modal
+      setShowEditModal?.(false);
+    } else {
+      // For other cases (review step), navigate to careers page
+      window.location.href = "/dashboard/careers";
     }
   };
 
@@ -135,6 +170,22 @@ export default function CareerForm({
         career, // Pass the entire career object to avoid duplicate API call
       );
 
+      // For editing published careers, mark all steps as completed and visited
+      // since the career has already been validated and published
+      if (formType === "edit" && career?.status === "active") {
+        const allSteps: Step[] = [
+          "career-details",
+          "cv-review",
+          "ai-interview",
+          "pipeline-stages",
+          "review",
+        ];
+        useCareerFormStore.setState({
+          completedSteps: allSteps,
+          visitedSteps: allSteps,
+        });
+      }
+
       // Mark as initialized to prevent re-running
       isInitializedRef.current = true;
       console.log("✅ CareerForm initialization complete");
@@ -148,10 +199,16 @@ export default function CareerForm({
       <CareerFormHeader
         formType={formType}
         isSaving={isSaving}
+        careerStatus={career?.status}
+        currentStep={currentStep}
         onSaveUnpublishedAction={handleSaveUnpublished}
         onSaveAndContinueAction={handleSaveAndContinue}
+        onSaveEditAction={handleSaveEdit}
+        onDiscardEditAction={handleDiscardEdit}
+        onCloseAction={handleClose}
       />
 
+      {/* Show step indicator for all modes to allow navigation */}
       <div style={{ marginBottom: 2 }}>
         <StepIndicator />
       </div>

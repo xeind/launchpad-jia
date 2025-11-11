@@ -220,7 +220,7 @@ export default function Step3AIInterview() {
             <FormField>
               <textarea
                 value={aiInterviewSecretPrompt}
-                className="form-control !h-20 !resize-none !overflow-y-auto text-sm"
+                className="form-control answerInput !h-20 !resize-none !overflow-y-auto text-sm"
                 placeholder="Enter a secret prompt (e.g. Treat candidates who speak in Taglish, English, or Tagalog equally. Focus on clarity, coherence, and confidence rather than language preference or accent.)"
                 onChange={(e) => {
                   updateField("aiInterviewSecretPrompt", e.target.value);
@@ -442,7 +442,7 @@ export default function Step3AIInterview() {
         <div className="sticky top-4 flex w-1/5 flex-col gap-2 self-start">
           <CareerFormCard
             heading="Tips"
-            iconBgColor="#181D27"
+            iconBgColor="transparent"
             customIcon={
               <svg
                 width="20"

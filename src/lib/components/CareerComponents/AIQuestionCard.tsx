@@ -75,14 +75,14 @@ export default function AIQuestionCard({
     <div
       ref={setNodeRef}
       style={style}
-      className="border rounded-lg bg-white shadow-sm border-gray-200 mb-2"
+      className="mb-2 rounded-lg border border-gray-200 bg-white shadow-sm"
     >
       <div className="flex items-stretch">
         {/* Drag Handle */}
         <div
           {...attributes}
           {...listeners}
-          className="flex items-center justify-center w-10 bg-gray-50 border-r border-gray-200 cursor-grab active:cursor-grabbing rounded-l-lg hover:bg-gray-100 transition-colors"
+          className="flex w-10 cursor-grab items-center justify-center rounded-l-lg border-r border-gray-200 bg-gray-50 transition-colors hover:bg-gray-100 active:cursor-grabbing"
         >
           <svg
             width="16"
@@ -102,9 +102,9 @@ export default function AIQuestionCard({
         </div>
 
         {/* Card Content */}
-        <div className="flex-1 flex items-center gap-3 p-3 min-w-0">
+        <div className="flex min-w-0 flex-1 items-center gap-3 p-3">
           {/* Question Number */}
-          <div className="flex items-center justify-center w-8 h-8 bg-gray-100 border border-gray-300 rounded text-xs font-medium text-gray-600 flex-shrink-0">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded border border-gray-300 bg-gray-100 text-xs font-medium text-gray-600">
             {index + 1}
           </div>
 
@@ -113,7 +113,7 @@ export default function AIQuestionCard({
             <textarea
               ref={textareaRef}
               value={editValue}
-              className="flex-1 border rounded px-3 py-2 text-md resize-none auto-resize"
+              className="form-control answerInput !h-20 !resize-none !overflow-y-auto text-sm"
               placeholder="Enter your question"
               onChange={(e) => {
                 setEditValue(e.target.value);
@@ -130,7 +130,7 @@ export default function AIQuestionCard({
             />
           ) : (
             <p
-              className="flex-1 m-0 text-md text-gray-600 font-normal leading-relaxed"
+              className="text-md m-0 flex-1 font-normal leading-relaxed text-gray-600"
               style={{ wordWrap: "break-word", whiteSpace: "pre-wrap" }}
             >
               {question}
@@ -138,18 +138,18 @@ export default function AIQuestionCard({
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex flex-shrink-0 items-center gap-2">
             {isEditing ? (
               <>
                 <button
-                  className="bg-transparent border-none text-green-600 cursor-pointer p-1 hover:text-green-800 transition-colors"
+                  className="cursor-pointer border-none bg-transparent p-1 text-green-600 transition-colors hover:text-green-800"
                   onClick={handleSave}
                   title="Save question"
                 >
                   <i className="la la-check text-lg"></i>
                 </button>
                 <button
-                  className="bg-transparent border-none text-gray-500 cursor-pointer p-1 hover:text-gray-700 transition-colors"
+                  className="cursor-pointer border-none bg-transparent p-1 text-gray-500 transition-colors hover:text-gray-700"
                   onClick={handleCancel}
                   title="Cancel"
                 >
@@ -159,14 +159,14 @@ export default function AIQuestionCard({
             ) : (
               <>
                 <button
-                  className="bg-transparent border-none text-gray-600 cursor-pointer p-1 hover:text-gray-400 transition-colors"
+                  className="cursor-pointer border-none bg-transparent p-1 text-gray-600 transition-colors hover:text-gray-400"
                   onClick={() => setIsEditing(true)}
                   title="Edit question"
                 >
                   <i className="la la-pen text-lg"></i>
                 </button>
                 <button
-                  className="bg-transparent border-none text-red-500 cursor-pointer p-1 hover:text-red-700 transition-colors"
+                  className="cursor-pointer border-none bg-transparent p-1 text-red-500 transition-colors hover:text-red-700"
                   onClick={onDeleteAction}
                   title="Delete question"
                 >
