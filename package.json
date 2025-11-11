@@ -56,5 +56,9 @@
     "prettier-plugin-tailwindcss": "^0.7.1",
     "tailwindcss": "^3.4.18",
     "typescript": "5.8.3"
+  },
+  "overrides": {
+    "jsdom": "^20.0.0",
+    "parse5": "^7.0.0"
   }
 }
