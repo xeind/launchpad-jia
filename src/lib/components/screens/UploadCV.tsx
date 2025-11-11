@@ -132,6 +132,10 @@ export default function () {
     fileInputRef.current.click();
   }
 
+  function handleSkipCV() {
+    setCurrentStep(step[1]);
+  }
+
   function processState(index, isAdvance = false) {
     const currentStepIndex = step.indexOf(currentStep);
 
@@ -237,13 +241,15 @@ export default function () {
       return false;
     }
 
-    const allEmpty = Object.values(userCV).every(
-      (value: any) => value.trim() == "",
-    );
+    if (userCV) {
+      const allEmpty = Object.values(userCV).every(
+        (value: any) => value.trim() == "",
+      );
 
-    if (allEmpty) {
-      alert("No details to be save.");
-      return false;
+      if (allEmpty) {
+        alert("No details to be save.");
+        return false;
+      }
     }
 
     let parsedDigitalCV = {
@@ -263,7 +269,7 @@ export default function () {
     }
 
     // Save CV if there are changes
-    if (hasChanges) {
+    if (hasChanges && userCV) {
       const formattedUserCV = cvSections.map((section) => ({
         name: section,
         content: userCV[section]?.trim() || "",
@@ -519,6 +525,15 @@ export default function () {
                     <span>
                       Already uploaded a CV? Take a moment to review your
                       details before we proceed.
+                    </span>
+                  </div>
+
+                  <div className={styles.cvContainer}>
+                    <img alt="" src={assetConstants.arrow} />
+                    <button onClick={handleSkipCV}>Skip CV Upload</button>
+                    <span>
+                      For demo purposes, skip CV upload and proceed directly to
+                      pre-screening questions.
                     </span>
                   </div>
                 </div>

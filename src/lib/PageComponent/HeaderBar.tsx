@@ -83,27 +83,27 @@ export default function HeaderBar(props: {
                   }}
                 >
                   <div
-                    className="flex items-center mr-2.5 cursor-pointer"
+                    className="mr-2.5 flex cursor-pointer items-center"
                     onClick={() => router.back()}
                   >
                     <ChevronLeftIcon />
                   </div>
                   <div
-                    className="flex items-center mr-2.5 cursor-pointer"
+                    className="mr-2.5 flex cursor-pointer items-center"
                     onClick={() => router.forward()}
                   >
                     <ChevronRightIcon />
                   </div>
-                  <div className="flex items-center mr-2.5 text-gray-400">
+                  <div className="mr-2.5 flex items-center text-gray-400">
                     |
                   </div>
-                  <div className="flex items-center mr-2.5">
+                  <div className="mr-2.5 flex items-center">
                     <i
                       className={`${icon || "la la-home"} text-gray`}
                       style={{ fontSize: 16 }}
                     ></i>
                   </div>
-                  <div className="flex items-center mr-2.5">
+                  <div className="mr-2.5 flex items-center">
                     <h4
                       className="text-gray mb-0"
                       style={{ fontSize: "16px", fontWeight: 400 }}
@@ -112,14 +112,14 @@ export default function HeaderBar(props: {
                     </h4>
                   </div>
                   <div
-                    className="mr-3 flex items-center cursor-pointer"
+                    className="mr-3 flex cursor-pointer items-center"
                     onClick={() => router.forward()}
                   >
                     <ChevronRightIcon />
                   </div>
-                  <li className="breadcrumb-item p-0 flex items-center">
+                  <li className="breadcrumb-item flex items-center p-0">
                     <h4
-                      className="text-black d-inline-block mb-0"
+                      className="d-inline-block mb-0 text-black"
                       style={{
                         fontSize: "16px",
                         fontWeight: 400,
@@ -136,7 +136,7 @@ export default function HeaderBar(props: {
             </div>
 
             <div className="col-lg-6 col-7">
-              <div className="flex items-center gap-2.5 flex-row justify-end w-full">
+              <div className="flex w-full flex-row items-center justify-end gap-2.5">
                 <span
                   className="text-sm font-medium"
                   style={{ color: "#414651" }}
@@ -161,19 +161,19 @@ export default function HeaderBar(props: {
                 </span>
                 {user && (
                   <div
-                    className="flex items-center gap-2.5 cursor-pointer"
+                    className="flex cursor-pointer items-center gap-2.5"
                     onClick={() => setShowAuthUserOptions(!showAuthUserOptions)}
                   >
                     <AvatarImage src={user?.image} alt="Avatar" />
                     <div className="flex flex-col items-start">
                       <span
-                        className="font-bold text-sm"
+                        className="text-sm font-bold"
                         style={{ color: "#414651" }}
                       >
                         {user?.name}
                       </span>
                       <span
-                        className="font-medium text-sm capitalize"
+                        className="text-sm font-medium capitalize"
                         style={{ color: "#717680" }}
                       >
                         {role?.replace("_", " ")}
@@ -183,8 +183,8 @@ export default function HeaderBar(props: {
                 )}
               </div>
               <div
-                className={`dropdown-menu dropdown-menu-right mt-1 org-dropdown-anim overflow-hidden${
-                  showAuthUserOptions ? " show" : ""
+                className={`dropdown-menu dropdown-menu-right org-dropdown-anim mt-1 overflow-hidden${
+                  showAuthUserOptions ? "show" : ""
                 }`}
                 style={{
                   maxWidth: "300px",
@@ -199,13 +199,13 @@ export default function HeaderBar(props: {
                   <AvatarImage src={user?.image} alt="Avatar" />
                   <div className="flex flex-col items-start">
                     <span
-                      className="font-bold text-sm"
+                      className="text-sm font-bold"
                       style={{ color: "#414651" }}
                     >
                       {user?.name}
                     </span>
                     <span
-                      className="font-medium text-sm"
+                      className="text-sm font-medium"
                       style={{ color: "#717680" }}
                     >
                       {user?.email}
@@ -226,7 +226,7 @@ export default function HeaderBar(props: {
                     //   window.location.href = "/login";
                     // }
 
-                    window.location.href = "/";
+                    window.location.href = "/login";
                   }}
                 >
                   <i className="la la-sign-out"></i> Log out
